@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  STAFF
+  CLIENT
+}
+
+enum ShipmentType {
+  EXPORT
+  IMPORT
+}
+
+enum ShipmentMode {
+  SEA_FCL
+  SEA_LCL
+  AIR
+  LAND
+}
+
+enum ShipmentStatus {
+  DRAFT
+  BOOKING_CONFIRMED
+  DOCS_IN_PROGRESS
+  CUSTOMS_PROCESSING
+  CARGO_RELEASED
+  IN_TRANSIT
+  ARRIVED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+
+enum DocumentType {
+  BILL_OF_LADING
+  AIRWAY_BILL
+  COMMERCIAL_INVOICE
+  PACKING_LIST
+  CERTIFICATE_OF_ORIGIN
+  PIB
+  PEB
+  CUSTOMS_RELEASE
+  INSURANCE_POLICY
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING
+  UPLOADED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  npwp      String?
+  phone     String?
+  email     String?
+  address   String?
+  city      String?
+  logoUrl   String?
+  timezone  String   @default("Asia/Jakarta")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  clients   Client[]
+  shipments Shipment[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  email          String    @unique
+  passwordHash   String
+  role           UserRole  @default(STAFF)
+  phone          String?
+  avatarUrl      String?
+  isActive       Boolean   @default(true)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  organization      Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignedShipments Shipment[]    @relation("AssignedTo")
+  activityLogs      ActivityLog[]
+  notifications     Notification[]
+
+  @@map("users")
+}
+
+model Client {
+  id                 String   @id @default(cuid())
+  organizationId     String
+  name               String
+  companyName        String?
+  npwp               String?
+  email              String?
+  phone              String?
+  address            String?
+  city               String?
+  country            String   @default("ID")
+  notes              String?
+  isActive           Boolean  @default(true)
+  portalEmail        String?
+  portalPasswordHash String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  shipments    Shipment[]
+
+  @@map("clients")
+}
+
+model Shipment {
+  id             String         @id @default(cuid())
+  organizationId String
+  clientId       String
+  assignedToId   String?
+  referenceNo    String         @unique
+  type           ShipmentType
+  mode           ShipmentMode
+  status         ShipmentStatus @default(DRAFT)
+
+  originCountry      String?
+  originPort         String?
+  destinationCountry String?
+  destinationPort    String?
+
+  cargoDescription String?
+  grossWeight      Float?
+  volume           Float?
+  packageCount     Int?
+  hsCode           String?
+
+  vesselName String?
+  voyageNo   String?
+  etd        DateTime?
+  eta        DateTime?
+  atd        DateTime?
+  ata        DateTime?
+
+  pibNo           String?
+  pebNo           String?
+  customsDeadline DateTime?
+
+  freightCost  Float?
+  localCharges Float?
+  customsDuty  Float?
+  totalCost    Float?
+  invoiceNo    String?
+  invoiceDate  DateTime?
+  isPaid       Boolean  @default(false)
+
+  notes         String?
+  internalNotes String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  client         Client                 @relation(fields: [clientId], references: [id])
+  assignedTo     User?                  @relation("AssignedTo", fields: [assignedToId], references: [id])
+  documents      Document[]
+  statusHistory  ShipmentStatusHistory[]
+  activityLogs   ActivityLog[]
+  notifications  Notification[]
+
+  @@index([organizationId, status])
+  @@index([organizationId, clientId])
+  @@map("shipments")
+}
+
+model ShipmentStatusHistory {
+  id          String         @id @default(cuid())
+  shipmentId  String
+  fromStatus  ShipmentStatus?
+  toStatus    ShipmentStatus
+  note        String?
+  changedById String?
+  changedAt   DateTime       @default(now())
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@map("shipment_status_history")
+}
+
+model Document {
+  id                String         @id @default(cuid())
+  shipmentId        String
+  type              DocumentType
+  status            DocumentStatus @default(PENDING)
+  name              String
+  fileUrl           String?
+  fileSize          Int?
+  mimeType          String?
+  version           Int            @default(1)
+  notes             String?
+  isRequired        Boolean        @default(true)
+  isVisibleToClient Boolean        @default(false)
+  uploadedById      String?
+  approvedById      String?
+  approvedAt        DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  shipment Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  shipmentId  String?
+  userId      String?
+  action      String
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([shipmentId])
+  @@map("activity_logs")
+}
+
+model Notification {
+  id           String   @id @default(cuid())
+  userId       String?
+  shipmentId   String?
+  type         String
+  title        String
+  message      String
+  isRead       Boolean  @default(false)
+  sentViaEmail Boolean  @default(false)
+  sentViaWa    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  shipment Shipment? @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
