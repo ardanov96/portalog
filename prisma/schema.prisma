@@ -59,6 +59,21 @@ enum DocumentStatus {
   REJECTED
 }
 
+enum SubscriptionPlan {
+  TRIAL
+  STARTER
+  GROWTH
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
 model Organization {
   id        String   @id @default(cuid())
   name      String
@@ -73,11 +88,73 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users     User[]
-  clients   Client[]
-  shipments Shipment[]
+  users        User[]
+  clients      Client[]
+  shipments    Shipment[]
+  subscription Subscription?
+  staffInvites StaffInvite[]
 
   @@map("organizations")
+}
+
+model Subscription {
+  id             String             @id @default(cuid())
+  organizationId String             @unique
+  plan           SubscriptionPlan   @default(TRIAL)
+  status         SubscriptionStatus @default(TRIALING)
+  trialEndsAt    DateTime?
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean        @default(false)
+
+  // Midtrans fields
+  midtransCustomerId  String?
+  midtransSubsId      String?
+  lastOrderId         String?
+  lastPaymentType     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  billingHistory BillingHistory[]
+
+  @@map("subscriptions")
+}
+
+model BillingHistory {
+  id             String   @id @default(cuid())
+  subscriptionId String
+  orderId        String   @unique
+  amount         Int
+  status         String   // settlement, pending, cancel, expire, deny
+  paymentType    String?
+  description    String?
+  paidAt         DateTime?
+  createdAt      DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("billing_history")
+}
+
+model StaffInvite {
+  id             String    @id @default(cuid())
+  organizationId String
+  email          String
+  name           String?
+  role           UserRole  @default(STAFF)
+  token          String    @unique
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  invitedById    String?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([organizationId, email])
+  @@map("staff_invites")
 }
 
 model User {

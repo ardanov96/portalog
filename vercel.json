@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path":     "/api/cron/deadline-reminder",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path":     "/api/cron/subscription-check",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path":     "/api/cron/cleanup",
+      "schedule": "0 2 * * 0"
+    }
+  ]
+}

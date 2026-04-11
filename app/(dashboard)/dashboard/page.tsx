@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/utils'
 import { ShipmentStatus } from '@prisma/client'
 import { Package, Clock, FileWarning, CheckCircle2, AlertTriangle, TrendingUp, Ship, Plane } from 'lucide-react'
 import Link from 'next/link'
+import { OnboardingBanner } from '@/components/onboarding/OnboardingBanner'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -66,6 +67,9 @@ export default async function DashboardPage() {
         <h1 className="text-2xl font-bold text-slate-900">Selamat datang, {user.name.split(' ')[0]} 👋</h1>
         <p className="text-slate-500 text-sm">{user.organization.name}</p>
       </div>
+
+      {/* Onboarding banner — otomatis hilang setelah semua step selesai atau di-dismiss */}
+      <OnboardingBanner />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -3,6 +3,8 @@ import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { ShipmentStatus } from '@prisma/client'
+import { notifyStatusChange } from '@/lib/whatsapp'
+import { emailNotifyStatusChange } from '@/lib/email'
 
 type Ctx = { params: Promise<{ id: string }> }
 
@@ -27,25 +29,47 @@ export async function GET(_: NextRequest, { params }: Ctx) {
 }
 
 const updateSchema = z.object({
+  // Status
   status:           z.nativeEnum(ShipmentStatus).optional(),
+  statusChangeNote: z.string().optional(),
   assignedToId:     z.string().cuid().optional(),
+
+  // Rute
+  originCountry:      z.string().optional(),
+  originPort:         z.string().optional(),
+  destinationCountry: z.string().optional(),
+  destinationPort:    z.string().optional(),
+
+  // Kargo
+  cargoDescription: z.string().optional(),
+  grossWeight:      z.number().optional().nullable(),
+  volume:           z.number().optional().nullable(),
+  packageCount:     z.number().int().optional().nullable(),
+  hsCode:           z.string().optional(),
+
+  // Vessel & jadwal
   vesselName:       z.string().optional(),
   voyageNo:         z.string().optional(),
   etd:              z.string().datetime().optional().nullable(),
   eta:              z.string().datetime().optional().nullable(),
   ata:              z.string().datetime().optional().nullable(),
+  customsDeadline:  z.string().datetime().optional().nullable(),
+
+  // Bea cukai
   pibNo:            z.string().optional(),
   pebNo:            z.string().optional(),
-  customsDeadline:  z.string().datetime().optional().nullable(),
+
+  // Keuangan
   freightCost:      z.number().optional(),
   localCharges:     z.number().optional(),
   customsDuty:      z.number().optional(),
   totalCost:        z.number().optional(),
   invoiceNo:        z.string().optional(),
   isPaid:           z.boolean().optional(),
+
+  // Catatan
   notes:            z.string().optional(),
   internalNotes:    z.string().optional(),
-  statusChangeNote: z.string().optional(),
 })
 
 export async function PATCH(req: NextRequest, { params }: Ctx) {
@@ -73,14 +97,70 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
         where: { id },
         data: {
           ...data,
-          etd:             data.etd  ? new Date(data.etd)  : data.etd,
-          eta:             data.eta  ? new Date(data.eta)  : data.eta,
-          ata:             data.ata  ? new Date(data.ata)  : data.ata,
+          // Convert datetime strings to Date objects
+          etd:             data.etd             ? new Date(data.etd)             : data.etd,
+          eta:             data.eta             ? new Date(data.eta)             : data.eta,
+          ata:             data.ata             ? new Date(data.ata)             : data.ata,
           customsDeadline: data.customsDeadline ? new Date(data.customsDeadline) : data.customsDeadline,
         },
-        include: { client: { select: { id: true, name: true, companyName: true } }, documents: true },
+        include: {
+          client:     { select: { id: true, name: true, companyName: true } },
+          documents:  true,
+          assignedTo: { select: { id: true, name: true } },
+        },
       })
     })
+
+    // ── Kirim notifikasi WA + Email jika status berubah ──────────────────
+    if (parsed.status && parsed.status !== existing.status) {
+      try {
+        const [fullClient, org] = await Promise.all([
+          prisma.client.findUnique({
+            where:  { id: existing.clientId },
+            select: { phone: true, email: true, name: true },
+          }),
+          prisma.organization.findUnique({
+            where:  { id: user.organizationId },
+            select: { name: true, email: true },
+          }),
+        ])
+
+        const appUrl    = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const portalUrl = `${appUrl}/portal/tracking/${existing.referenceNo}`
+        const eta       = existing.eta?.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+        const clientName = (updated as any).client?.name ?? fullClient?.name ?? ''
+
+        // WA — kalau ada nomor HP
+        if (fullClient?.phone && org) {
+          notifyStatusChange(fullClient.phone, {
+            clientName,
+            referenceNo: existing.referenceNo,
+            newStatus:   parsed.status,
+            orgName:     org.name,
+            eta,
+            portalUrl,
+            note:        statusChangeNote,
+          }).catch(e => console.warn('[WA] non-fatal:', e))
+        }
+
+        // Email — kalau ada email klien
+        if (fullClient?.email && org) {
+          emailNotifyStatusChange({
+            clientName,
+            clientEmail:  fullClient.email,
+            referenceNo:  existing.referenceNo,
+            newStatus:    parsed.status,
+            orgName:      org.name,
+            orgEmail:     org.email ?? undefined,
+            eta,
+            portalUrl,
+            note:         statusChangeNote,
+          }).catch(e => console.warn('[EMAIL] non-fatal:', e))
+        }
+      } catch (notifErr) {
+        console.warn('[NOTIF] Gagal kirim notifikasi (non-fatal):', notifErr)
+      }
+    }
 
     return NextResponse.json({ success: true, data: updated })
   } catch (e) {
