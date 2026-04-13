@@ -57,6 +57,7 @@ export async function GET(req: NextRequest) {
         id: true, referenceNo: true, type: true, mode: true, status: true,
         originPort: true, destinationPort: true, eta: true, etd: true,
         cargoDescription: true, createdAt: true,
+        delayRiskScore: true, delayRiskLevel: true,  // AI prediction
         client:     { select: { id: true, name: true, companyName: true } },
         assignedTo: { select: { id: true, name: true } },
         _count:     { select: { documents: true } },

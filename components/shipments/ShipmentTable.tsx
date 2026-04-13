@@ -368,6 +368,22 @@ function ShipmentRow({ shipment: s }: { shipment: ShipmentListItem }) {
       <td className="px-4 py-3.5 whitespace-nowrap">
         <Link href={`/shipments/${s.id}`} className="block">
           <StatusBadge status={s.status as keyof typeof STATUS_CONFIG} />
+          {/* Delay risk badge jika tersedia */}
+          {(s as any).delayRiskLevel && !['COMPLETED','DELIVERED','CANCELLED'].includes(s.status) && (() => {
+            const level = (s as any).delayRiskLevel as string
+            const score = (s as any).delayRiskScore as number
+            const cfg = {
+              low:      'bg-green-50 text-green-700',
+              medium:   'bg-amber-50 text-amber-700',
+              high:     'bg-orange-50 text-orange-700',
+              critical: 'bg-red-50 text-red-700',
+            }[level] ?? 'bg-slate-100 text-slate-600'
+            return (
+              <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold mt-1', cfg)}>
+                ⚡ {score}
+              </span>
+            )
+          })()}
         </Link>
       </td>
 

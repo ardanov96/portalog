@@ -12,6 +12,9 @@ import {
   ExternalLink, Activity, Upload, Eye, EyeOff,
   MoreHorizontal, Loader2, Check,
 } from 'lucide-react'
+import { VesselTracker } from '@/components/shipments/VesselTracker'
+import { INSWLookup } from '@/components/shipments/INSWLookup'
+import { DelayPredictor } from '@/components/shipments/DelayPredictor'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,6 +50,11 @@ interface Shipment {
   invoiceNo: string | null; isPaid: boolean
   notes: string | null; internalNotes: string | null
   createdAt: string; updatedAt: string
+  // AI prediction cache
+  delayRiskScore?:   number | null
+  delayRiskLevel?:   string | null
+  delayRiskSummary?: string | null
+  delayPredictedAt?: string | null
   client: Client
   assignedTo: { id: string; name: string; email: string } | null
   documents: Document[]
@@ -453,6 +461,19 @@ export function ShipmentDetailClient({
                 )}
               </SectionCard>
 
+              {/* Vessel Tracking real-time */}
+              <VesselTracker
+                shipmentId={shipment.id}
+                vesselName={shipment.vesselName}
+                imoNumber={(shipment as any).imoNumber}
+                mmsiNumber={(shipment as any).mmsiNumber}
+                currentEta={shipment.eta}
+                mode={shipment.mode}
+                onEtaUpdated={(newEta) => {
+                  setShipment(prev => ({ ...prev, eta: newEta }))
+                }}
+              />
+
               <SectionCard title="Bea Cukai" icon={Hash}>
                 <InfoRow label="No. PIB" value={shipment.pibNo} mono />
                 <InfoRow label="No. PEB" value={shipment.pebNo} mono />
@@ -460,6 +481,17 @@ export function ShipmentDetailClient({
                   <p className="text-sm text-slate-400 text-center py-4">Belum ada no. PIB / PEB</p>
                 )}
               </SectionCard>
+
+              <INSWLookup
+                shipmentId={shipment.id}
+                pibNo={shipment.pibNo}
+                pebNo={shipment.pebNo}
+                shipmentType={shipment.type}
+                referenceNo={shipment.referenceNo}
+                onSaved={(newPib, newPeb) => {
+                  setShipment(prev => ({ ...prev, pibNo: newPib, pebNo: newPeb }))
+                }}
+              />
 
               {shipment.notes && (
                 <SectionCard title="Catatan" icon={FileText}>
@@ -470,6 +502,16 @@ export function ShipmentDetailClient({
 
             {/* Right sidebar */}
             <div className="space-y-5">
+              {/* AI Delay Predictor — di paling atas sidebar */}
+              <DelayPredictor
+                shipmentId={shipment.id}
+                status={shipment.status}
+                cachedScore={shipment.delayRiskScore}
+                cachedLevel={shipment.delayRiskLevel}
+                cachedSummary={shipment.delayRiskSummary}
+                cachedAt={shipment.delayPredictedAt}
+              />
+
               <SectionCard title="Klien" icon={User}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 text-xs font-bold shrink-0">

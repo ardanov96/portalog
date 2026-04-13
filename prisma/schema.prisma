@@ -74,25 +74,40 @@ enum SubscriptionStatus {
   EXPIRED
 }
 
+enum DashboardMode {
+  FORWARDER
+  EXPORTER
+  IMPORTER
+}
+
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  npwp      String?
-  phone     String?
-  email     String?
-  address   String?
-  city      String?
-  logoUrl   String?
-  timezone  String   @default("Asia/Jakarta")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String        @id @default(cuid())
+  name          String
+  slug          String        @unique
+  npwp          String?
+  phone         String?
+  email         String?
+  address       String?
+  city          String?
+  logoUrl       String?
+  timezone      String        @default("Asia/Jakarta")
+  dashboardMode DashboardMode @default(FORWARDER)
+
+  // Referral program
+  referralCode   String?  @unique  // kode unik org ini untuk mengajak org lain
+  referralCredits Int     @default(0)  // kredit dalam bulan (belum diklaim)
+  referralUsedAt  DateTime?           // kapan kredit terakhir diklaim
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   users        User[]
   clients      Client[]
   shipments    Shipment[]
   subscription Subscription?
   staffInvites StaffInvite[]
+  referrals    Referral[]    @relation("ReferrerOrg")
+  referredBy   Referral[]    @relation("ReferredOrg")
 
   @@map("organizations")
 }
@@ -226,10 +241,21 @@ model Shipment {
 
   vesselName String?
   voyageNo   String?
+  imoNumber  String?     // IMO vessel identifier untuk tracking akurat
+  mmsiNumber String?     // MMSI untuk AIS tracking
   etd        DateTime?
   eta        DateTime?
+  etaUpdatedAt DateTime? // Kapan ETA terakhir diperbarui dari vessel data
   atd        DateTime?
   ata        DateTime?
+
+  // Vessel position cache (diupdate oleh cron)
+  vesselLat        Float?
+  vesselLon        Float?
+  vesselSpeed      Float?   // knots
+  vesselCourse     Float?   // degrees
+  vesselStatus     String?  // "underway", "at anchor", "moored", dll
+  vesselPositionAt DateTime? // timestamp posisi terakhir
 
   pibNo           String?
   pebNo           String?
@@ -245,8 +271,16 @@ model Shipment {
 
   notes         String?
   internalNotes String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+
+  // AI Delay Prediction cache (diupdate on-demand, max sekali per 6 jam)
+  delayRiskScore    Int?      // 0-100
+  delayRiskLevel    String?   // "low" | "medium" | "high" | "critical"
+  delayRiskFactors  String?   // JSON array of risk factors
+  delayRiskSummary  String?   // Ringkasan teks
+  delayPredictedAt  DateTime? // Kapan prediksi terakhir dibuat
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client         Client                 @relation(fields: [clientId], references: [id])
@@ -332,4 +366,36 @@ model Notification {
 
   @@index([userId, isRead])
   @@map("notifications")
+}
+
+// ─── Referral Program ─────────────────────────────────────────────────────────
+
+enum ReferralStatus {
+  PENDING    // Referral dibuat, org yg dirujuk belum subscribe
+  QUALIFIED  // Org yg dirujuk sudah subscribe (paid)
+  REWARDED   // Reward sudah diklaim/diterapkan ke referrer
+  EXPIRED    // Referral hangus (org yg dirujuk tidak convert dalam 90 hari)
+}
+
+model Referral {
+  id               String         @id @default(cuid())
+  referrerOrgId    String         // Org yang memberi kode
+  referredOrgId    String?        // Org yang mendaftar pakai kode (null jika belum daftar)
+  code             String         // Kode referral yang digunakan
+  status           ReferralStatus @default(PENDING)
+  rewardMonths     Int            @default(1)    // Berapa bulan kredit reward
+  rewardAppliedAt  DateTime?      // Kapan kredit diterapkan
+  referredEmail    String?        // Email org yg diundang (opsional, untuk tracking)
+  referredOrgName  String?        // Nama org yg mendaftar
+  qualifiedAt      DateTime?      // Kapan org referral subscribe pertama
+  expiresAt        DateTime       // 90 hari dari waktu kode dibuat
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  referrerOrg Organization  @relation("ReferrerOrg", fields: [referrerOrgId], references: [id], onDelete: Cascade)
+  referredOrg  Organization? @relation("ReferredOrg",  fields: [referredOrgId],  references: [id], onDelete: SetNull)
+
+  @@index([code])
+  @@index([referrerOrgId, status])
+  @@map("referrals")
 }
