@@ -26,7 +26,7 @@ const schema = z.object({
   phone:       z.string().optional(),
   address:     z.string().optional(),
   city:        z.string().optional(),
-  country:     z.string().default('ID'),
+  country:     z.string().min(1),
   notes:       z.string().optional(),
 })
 type FormValues = z.infer<typeof schema>

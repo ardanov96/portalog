@@ -48,20 +48,29 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role:    'user',
-          content: [
-            {
-              type:   'image',
-              source: {
-                type:       'base64',
-                media_type: mediaType === 'application/pdf' ? 'application/pdf' : mediaType,
-                data:        base64,
-              },
-            },
-            {
-              type: 'text',
-              text: prompt,
-            },
-          ],
+          content: mediaType === 'application/pdf'
+            ? [
+                {
+                  type:   'document' as const,
+                  source: {
+                    type:       'base64'          as const,
+                    media_type: 'application/pdf' as const,
+                    data:        base64,
+                  },
+                },
+                { type: 'text' as const, text: prompt },
+              ]
+            : [
+                {
+                  type:   'image' as const,
+                  source: {
+                    type:       'base64' as const,
+                    media_type: mediaType as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
+                    data:        base64,
+                  },
+                },
+                { type: 'text' as const, text: prompt },
+              ],
         },
       ],
     })

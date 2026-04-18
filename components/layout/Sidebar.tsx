@@ -4,15 +4,19 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn, getInitials } from '@/lib/utils'
 import type { CurrentUser } from '@/lib/auth'
-import { LayoutDashboard, Ship, Users, FileText, Settings, LogOut, Receipt, BarChart2, CreditCard, Clock } from 'lucide-react'
+import { LayoutDashboard, Ship, Users, FileText, Settings, LogOut, Receipt, BarChart2, CreditCard, Clock, Gift, Globe, Code2 } from 'lucide-react'
 
 const NAV = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/shipments', label: 'Shipments', icon: Ship },
-  { href: '/clients',   label: 'Klien',     icon: Users },
-  { href: '/invoices',  label: 'Invoice',   icon: Receipt },
-  { href: '/laporan',   label: 'Laporan',   icon: BarChart2 },
-  { href: '/documents', label: 'Dokumen',   icon: FileText },
+  { href: '/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },
+  { href: '/shipments',   label: 'Shipments',   icon: Ship },
+  { href: '/clients',     label: 'Klien',       icon: Users },
+  { href: '/invoices',    label: 'Invoice',     icon: Receipt },
+  { href: '/laporan',     label: 'Laporan',     icon: BarChart2 },
+  { href: '/documents',   label: 'Dokumen',     icon: FileText },
+  { href: '/referral',    label: 'Referral',    icon: Gift },
+  { href: '/white-label', label: 'White-label', icon: Globe },
+  { href: '/api-keys',    label: 'API Keys',    icon: Key },
+  { href: '/developer',   label: 'API & Dev',   icon: Code2 },
 ]
 
 export function Sidebar({ user }: { user: CurrentUser }) {

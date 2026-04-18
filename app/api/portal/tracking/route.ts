@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
-import { verifyPortalToken } from '../auth/route'
+import { verifyPortalToken } from '@/lib/portal-auth'
 
 async function getPortalClient() {
   const jar   = await cookies()

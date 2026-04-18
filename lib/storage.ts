@@ -102,7 +102,7 @@ async function uploadToR2(
   const res = await fetch(url, {
     method:  'PUT',
     headers: { ...headers, Authorization: authHeader },
-    body:    buffer,
+    body: new Uint8Array(buffer),
   })
 
   if (!res.ok) {

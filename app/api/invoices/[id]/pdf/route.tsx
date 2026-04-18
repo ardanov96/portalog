@@ -3,7 +3,6 @@ import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { InvoicePDFDocument } from '@/components/invoices/InvoicePDFDocument'
-import { createElement } from 'react'
 
 type Ctx = { params: Promise<{ id: string }> }
 
@@ -84,15 +83,15 @@ export async function GET(_: NextRequest, { params }: Ctx) {
 
   try {
     const buffer = await renderToBuffer(
-      createElement(InvoicePDFDocument, { data: invoiceData })
+      <InvoicePDFDocument data={invoiceData} />
     )
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type':        'application/pdf',
         'Content-Disposition': `attachment; filename="${shipment.invoiceNo}.pdf"`,
         'Content-Length':      String(buffer.length),
-      },
+    },
     })
   } catch (err) {
     console.error('[PDF RENDER]', err)

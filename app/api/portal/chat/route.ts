@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import Anthropic from '@anthropic-ai/sdk'
-import { verifyPortalToken } from '../auth/route'
+import { verifyPortalToken } from '@/lib/portal-auth'
 
 const anthropic = new Anthropic()
 

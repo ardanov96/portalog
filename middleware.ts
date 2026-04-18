@@ -4,14 +4,9 @@ import { rateLimit, getIdentifier, rateLimitHeaders, tooManyRequests } from './l
 import type { RateLimitKey } from './lib/rate-limit'
 
 // ─── Public routes ─────────────────────────────────────────────────────────────
-const PUBLIC_PAGES = ['/login', '/register', '/portal-login', '/invite']
+const PUBLIC_PAGES = ['/login', '/register', '/portal', '/invite', '/offline']
 
-
-// ─── Portal routes (customer) — pakai custom auth bukan NextAuth ───────────────
-const PORTAL_PAGES = ['/portal']
-
-
-// ─── Map pathname + method → rate limit config key ────────────────────────────
+// ─── Rate limit key map ────────────────────────────────────────────────────────
 function getRateLimitKey(pathname: string, method: string): RateLimitKey {
   if (pathname === '/api/auth/login')                  return 'auth_login'
   if (pathname === '/api/auth/register')               return 'auth_register'
@@ -26,42 +21,68 @@ function getRateLimitKey(pathname: string, method: string): RateLimitKey {
   return 'api_authed'
 }
 
+// ─── App hostname (default ForwarderOS domain) ────────────────────────────────
+const APP_HOSTNAMES = new Set([
+  'forwarderos.id',
+  'www.forwarderos.id',
+  'localhost',
+])
+
+function isDefaultHost(hostname: string): boolean {
+  const host = hostname.split(':')[0].toLowerCase()
+  return APP_HOSTNAMES.has(host) || host.endsWith('.vercel.app') || host.endsWith('.localhost')
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
+  const hostname     = req.headers.get('host') ?? ''
   const method       = req.method
 
-  // ── Page routes — auth gate only, no rate limiting ─────────────────────────
-  if (!pathname.startsWith('/api')) {
+  // ── White-label custom domain detection ────────────────────────────────────
+  // Jika request datang dari custom domain (bukan default app domain),
+  // route ke portal klien white-label
+  if (!isDefaultHost(hostname) && !pathname.startsWith('/api') && !pathname.startsWith('/_next')) {
+    // Rewrite ke portal dengan domain info di header
+    const url = req.nextUrl.clone()
 
-    // ── Portal customer routes (/portal/tracking, dll) ──────────────────────
-    const isPortalPage = PORTAL_PAGES.some(p => pathname.startsWith(p))
-    if (isPortalPage) {
-      const portalToken = req.cookies.get('ff_portal_session')?.value
-      if (!portalToken) {
-        return NextResponse.redirect(new URL('/portal-login', req.url))
-      }
-      return NextResponse.next()
+    // Jika root atau /portal, serve portal white-label
+    if (pathname === '/' || pathname.startsWith('/portal') || pathname.startsWith('/tracking')) {
+      url.pathname = '/wl-portal' + (pathname === '/' ? '' : pathname.replace('/portal', ''))
+      const res = NextResponse.rewrite(url)
+      res.headers.set('X-WL-Domain', hostname.split(':')[0].toLowerCase())
+      res.headers.set('X-WL-Request', '1')
+      return res
     }
 
-    // ── Staff/admin routes ──────────────────────────────────────────────────
+    // Path lain di custom domain → redirect ke portal root
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
+
+  // ── Standard page routing (default domain) ─────────────────────────────────
+  if (!pathname.startsWith('/api')) {
     const isPublic = PUBLIC_PAGES.some(p => pathname.startsWith(p))
     const token    = req.cookies.get('ff_session')?.value
     const isAuth   = token ? !!(await verifySessionToken(token)) : false
 
-    // Jika sudah login staff tapi akses /login atau /register → redirect dashboard
-    if (isPublic && isAuth) return NextResponse.redirect(new URL('/dashboard', req.url))
-
-    // Jika belum login staff dan akses halaman protected → redirect /login
+    if (isPublic && isAuth && !pathname.startsWith('/portal') && !pathname.startsWith('/wl-portal')) {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
     if (!isPublic && !isAuth) {
       const url = new URL('/login', req.url)
       url.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(url)
     }
 
-    return NextResponse.next()
+    const res = NextResponse.next()
+    // Inject hostname untuk white-label preview (/wl-portal?preview=slug)
+    if (pathname.startsWith('/wl-portal')) {
+      res.headers.set('X-WL-Domain', hostname.split(':')[0].toLowerCase())
+    }
+    return res
   }
 
-  // ── API routes — rate limit then forward ───────────────────────────────────
+  // ── API routing with rate limiting ─────────────────────────────────────────
   const token       = req.cookies.get('ff_session')?.value
   const payload     = token ? await verifySessionToken(token) : null
   const identifier  = getIdentifier(req, payload?.userId)
@@ -71,15 +92,13 @@ export async function middleware(req: NextRequest) {
   if (!result.success) return tooManyRequests(result)
 
   const res = NextResponse.next()
-  // Expose rate limit state so clients can self-throttle
   Object.entries(rateLimitHeaders(result)).forEach(([k, v]) => res.headers.set(k, v))
-  // Baseline security headers
   res.headers.set('X-Content-Type-Options', 'nosniff')
-  res.headers.set('X-Frame-Options', 'DENY')
+  res.headers.set('X-Frame-Options', 'SAMEORIGIN')   // relaxed untuk white-label iframes
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   return res
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }

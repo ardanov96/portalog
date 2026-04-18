@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendDeadlineReminders } from '@/lib/whatsapp'
-import { sendBulkDeadlineEmailReminders } from '@/lib/email'
+import { checkAndSendDeadlineReminders as sendBulkDeadlineEmailReminders } from '@/lib/email'
 import { verifyCronAuth, cronUnauthorized, buildResult, cronLog } from '@/lib/cron'
 
 const JOB = 'deadline-reminder'

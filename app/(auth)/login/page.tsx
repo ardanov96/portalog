@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { LoginForm } from '@/components/forms/LoginForm'
 
 export const metadata: Metadata = { title: 'Login' }
@@ -14,7 +15,9 @@ export default function LoginPage() {
           <p className="text-slate-500 text-sm mt-1">Masuk ke akun Anda</p>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-          <LoginForm />
+          <Suspense fallback={null}>
+            <LoginForm />
+          </Suspense>
           <p className="text-center text-sm text-slate-500 mt-6">
             Belum punya akun?{' '}
             <Link href="/register" className="text-brand-600 font-semibold hover:underline">Daftar gratis</Link>

@@ -1,28 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { SignJWT, jwtVerify } from 'jose'
+import { createPortalToken } from '@/lib/portal-auth'
 import { cookies } from 'next/headers'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
 
 const PORTAL_COOKIE = 'ff_portal_session'
-const secret = () => new TextEncoder().encode(process.env.AUTH_SECRET ?? 'fallback-secret')
-
-export async function createPortalToken(clientId: string) {
-  return new SignJWT({ clientId, type: 'portal' })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('30d')
-    .sign(secret())
-}
-
-export async function verifyPortalToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, secret())
-    if (payload.type !== 'portal') return null
-    return payload as { clientId: string; type: string }
-  } catch { return null }
-}
 
 const loginSchema = z.object({
   email:    z.string().email(),

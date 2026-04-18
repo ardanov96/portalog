@@ -92,6 +92,7 @@ model Organization {
   logoUrl       String?
   timezone      String        @default("Asia/Jakarta")
   dashboardMode DashboardMode @default(FORWARDER)
+  apiKeys       ApiKey[]
 
   // Referral program
   referralCode   String?  @unique  // kode unik org ini untuk mengajak org lain
@@ -108,6 +109,7 @@ model Organization {
   staffInvites StaffInvite[]
   referrals    Referral[]    @relation("ReferrerOrg")
   referredBy   Referral[]    @relation("ReferredOrg")
+  whiteLabel   WhiteLabel?
 
   @@map("organizations")
 }
@@ -398,4 +400,110 @@ model Referral {
   @@index([code])
   @@index([referrerOrgId, status])
   @@map("referrals")
+}
+
+// ─── White-label ──────────────────────────────────────────────────────────────
+
+enum WhiteLabelStatus {
+  PENDING     // Domain belum diverifikasi
+  ACTIVE      // Domain aktif & terverifikasi
+  SUSPENDED   // Dinonaktifkan oleh admin
+}
+
+model WhiteLabel {
+  id             String            @id @default(cuid())
+  organizationId String            @unique
+  status         WhiteLabelStatus  @default(PENDING)
+
+  // Custom domain
+  customDomain      String?  @unique  // e.g. "portal.majulogistik.co.id"
+  domainVerifiedAt  DateTime?
+  domainVerifyToken String?  @unique  // TXT record untuk verifikasi DNS
+
+  // Branding
+  brandName        String?          // Nama brand (default: org name)
+  logoUrl          String?          // URL logo (override org logo)
+  faviconUrl       String?
+  primaryColor     String?          // Hex: "1A3C34"
+  accentColor      String?          // Hex: "C8953A"
+  fontFamily       String?          // "Inter", "Plus Jakarta Sans", dll
+  backgroundStyle  String           @default("solid")  // "solid" | "gradient"
+  backgroundColor  String?          // Hex
+
+  // Portal text
+  portalTitle      String?          // Judul halaman portal
+  portalWelcome    String?          // Pesan selamat datang
+  portalFooter     String?          // Teks footer kustom
+  supportEmail     String?
+  supportPhone     String?
+  supportWhatsapp  String?
+
+  // Feature flags untuk portal klien white-label
+  showPoweredBy    Boolean  @default(true)   // "Powered by ForwarderOS"
+  showChatbot      Boolean  @default(true)
+  showDocuments    Boolean  @default(true)
+  showTimeline     Boolean  @default(true)
+  allowClientLogin Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("white_labels")
+}
+
+model ApiKey {
+  id             String        @id @default(cuid())
+  organizationId String
+  name           String
+  keyHash        String        @unique
+  keyPrefix      String
+  scopes         ApiKeyScope[]
+  isActive       Boolean       @default(true)
+  lastUsedAt     DateTime?
+  lastUsedIp     String?
+  expiresAt      DateTime?
+  requestCount   BigInt        @default(0)
+  monthlyCount   Int           @default(0)
+  monthlyLimit   Int           @default(10000)
+  description    String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  logs         ApiKeyLog[]
+
+  @@index([organizationId, isActive])
+  @@map("api_keys")
+}
+
+enum ApiKeyScope {
+  SHIPMENTS_READ
+  SHIPMENTS_WRITE
+  CLIENTS_READ
+  CLIENTS_WRITE
+  DOCUMENTS_READ
+  DOCUMENTS_WRITE
+  INVOICES_READ
+  ANALYTICS_READ
+  ALL_READ
+  ALL_WRITE
+}
+
+model ApiKeyLog {
+  id         String   @id @default(cuid())
+  apiKeyId   String
+  endpoint   String
+  method     String
+  status     Int
+  ipAddress  String?
+  userAgent  String?
+  durationMs Int?
+  createdAt  DateTime @default(now())
+
+  apiKey ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  @@index([apiKeyId, createdAt])
+  @@map("api_key_logs")
 }

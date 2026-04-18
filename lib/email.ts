@@ -416,3 +416,5 @@ export async function checkAndSendDeadlineReminders(shipments: {
 
   await Promise.allSettled(pending)
 }
+
+export const sendBulkDeadlineEmailReminders = checkAndSendDeadlineReminders
