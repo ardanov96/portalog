@@ -1,7 +1,11 @@
-import { redirect } from 'next/navigation'
-import { getCurrentUser } from '@/lib/auth'
+// app/page.tsx — Server Component, JANGAN tambah 'use client'
+import LandingPage from '@/components/landing/LandingPage'
 
-export default async function HomePage() {
-  const user = await getCurrentUser()
-  redirect(user ? '/dashboard' : '/login')
+export const metadata = {
+  title: 'ForwarderOS — Platform Manajemen Ekspedisi & PPJK',
+  description: 'Platform manajemen end-to-end untuk perusahaan freight forwarder dan PPJK Indonesia.',
+}
+
+export default function Page() {
+  return <LandingPage />
 }

@@ -18,3 +18,67 @@
   * { @apply border-border; }
   body { @apply bg-background text-foreground; }
 }
+
+/* ── Landing Page Animations ──────────────────────────────────────────────── */
+
+@keyframes fo-fade-up  { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fo-fade-in  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fo-slide-l  { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes fo-slide-r  { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes fo-float    { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes fo-shimmer  { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes fo-pulse    { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(.75); } }
+@keyframes fo-nav      { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+.fo-nav     { animation: fo-nav     .45s ease both; }
+.fo-fade-up { animation: fo-fade-up .65s cubic-bezier(.16,1,.3,1) both; }
+.fo-fade-in { animation: fo-fade-in .5s  ease both; }
+.fo-slide-l { animation: fo-slide-l .7s  cubic-bezier(.16,1,.3,1) both; }
+.fo-slide-r { animation: fo-slide-r .55s cubic-bezier(.16,1,.3,1) both; }
+.fo-float   { animation: fo-float  4.5s  ease-in-out infinite; }
+.fo-pulse   { animation: fo-pulse    2s  ease-in-out infinite; }
+
+.fo-d100 { animation-delay: 100ms; }
+.fo-d200 { animation-delay: 200ms; }
+.fo-d300 { animation-delay: 300ms; }
+.fo-d400 { animation-delay: 400ms; }
+.fo-d500 { animation-delay: 500ms; }
+.fo-d600 { animation-delay: 600ms; }
+
+.fo-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .65s cubic-bezier(.16,1,.3,1), transform .65s cubic-bezier(.16,1,.3,1);
+}
+.fo-reveal.fo-visible { opacity: 1; transform: none; }
+
+.fo-shimmer {
+  background: linear-gradient(90deg, #818cf8 0%, #c7d2fe 40%, #818cf8 60%, #6366f1 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: fo-shimmer 3.5s linear infinite;
+}
+
+.fo-feat::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  transform: scaleX(0);
+  transition: transform .4s ease;
+  transform-origin: left;
+}
+.fo-feat:hover::before { transform: scaleX(1); }
+
+.fo-navlink::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: #818cf8;
+  width: 0;
+  transition: width .3s ease;
+}
+.fo-navlink:hover::after { width: 100%; }

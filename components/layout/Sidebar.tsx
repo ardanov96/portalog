@@ -3,8 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn, getInitials } from '@/lib/utils'
-import type { CurrentUser } from '@/lib/auth'
-import { LayoutDashboard, Ship, Users, FileText, Settings, LogOut, Receipt, BarChart2, CreditCard, Clock, Gift, Globe, Code2 } from 'lucide-react'
+import type { CurrentUser } from '@/lib/types'
+import { LayoutDashboard, Ship, Users, FileText, 
+  Settings, LogOut, Receipt, BarChart2, CreditCard, 
+  Clock, Gift, Globe, Code2, Key } from 'lucide-react'
+
 
 const NAV = [
   { href: '/dashboard',   label: 'Dashboard',   icon: LayoutDashboard },

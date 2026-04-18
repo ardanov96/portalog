@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { cache } from 'react'
 import { prisma } from './prisma'
+import type { CurrentUser } from './types'
 
 const COOKIE_NAME = 'ff_session'
 
@@ -62,4 +63,5 @@ export const getCurrentUser = cache(async () => {
   })
 })
 
-export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
+
+export type { CurrentUser }

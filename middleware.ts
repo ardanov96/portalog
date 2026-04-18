@@ -4,7 +4,7 @@ import { rateLimit, getIdentifier, rateLimitHeaders, tooManyRequests } from './l
 import type { RateLimitKey } from './lib/rate-limit'
 
 // ─── Public routes ─────────────────────────────────────────────────────────────
-const PUBLIC_PAGES = ['/login', '/register', '/portal', '/invite', '/offline']
+const PUBLIC_PAGES = ['/', '/login', '/register', '/portal', '/invite', '/offline']
 
 // ─── Rate limit key map ────────────────────────────────────────────────────────
 function getRateLimitKey(pathname: string, method: string): RateLimitKey {
