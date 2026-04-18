@@ -1,4 +1,4 @@
-# ForwarderOS
+# PortalogOS
 
 Sistem manajemen operasional untuk Freight Forwarder & PPJK — dibangun dengan Next.js 15, Prisma, dan PostgreSQL.
 
@@ -18,8 +18,8 @@ Sistem manajemen operasional untuk Freight Forwarder & PPJK — dibangun dengan 
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/USERNAME/forwarder-saas.git
-cd forwarder-saas
+git clone https://github.com/ardanov96/portalog.git
+cd portalog
 npm install
 ```
 
@@ -29,7 +29,7 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` sesuai konfigurasi PostgreSQL lokal kamu:
+Edit `.env` sesuai konfigurasi PostgreSQL lokal anda:
 
 ```env
 DATABASE_URL="postgresql://postgres:password@localhost:5432/forwarder_saas"
@@ -77,10 +77,10 @@ Setelah seed berhasil:
 
 ---
 
-## Struktur Project
+## Struktur Project V.1
 
 ```
-forwarder-saas/
+portalog/
 ├── app/
 │   ├── (auth)/               # Halaman login & register
 │   │   ├── login/
@@ -185,18 +185,3 @@ npm run start
 # atau dengan PM2:
 pm2 start npm --name "forwarder-os" -- start
 ```
-
----
-
-## Roadmap MVP
-
-- [x] Auth (login, register, session)
-- [x] Data model lengkap (shipment, dokumen, klien, aktivitas)
-- [x] API CRUD shipment & klien
-- [x] Dashboard dengan stats
-- [ ] UI list shipment dengan filter & search
-- [ ] Form buat/edit shipment
-- [ ] Upload & manajemen dokumen
-- [ ] Notifikasi WA via Fonnte
-- [ ] Client portal (view only)
-- [ ] Modul invoicing
