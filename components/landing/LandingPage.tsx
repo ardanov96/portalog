@@ -536,12 +536,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-white/[0.06] pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-slate-500">© 2025 Portalog. Hak cipta dilindungi undang-undang.</p>
-            <div className="flex gap-2">
-              {['Next.js 15', 'PostgreSQL', 'Prisma', 'TypeScript'].map(t => (
-                <span key={t} className="text-[11px] font-mono px-2 py-1 rounded border border-white/[0.07] text-slate-500">{t}</span>
-              ))}
-            </div>
+            <p className="text-xs text-slate-500">© {new Date().getFullYear()} Portalog. Hak cipta dilindungi undang-undang.</p>
           </div>
         </div>
       </footer>
