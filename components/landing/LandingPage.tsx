@@ -3,6 +3,7 @@
 // components/landing/LandingPage.tsx
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import {
   Ship, Receipt, FileText, Users, BarChart2, Key,
@@ -127,7 +128,7 @@ const PLANS = [
 ]
 
 const TESTIMONIALS = [
-  { initials: 'AS', name: 'Andi Setiawan',   company: 'Direktur Operasional · PT Maju Logistik', text: '"Sebelum ForwarderOS, tim kami menghabiskan 3–4 jam sehari untuk update status shipment manual. Sekarang semua terotomasi."' },
+  { initials: 'AS', name: 'Andi Setiawan',   company: 'Direktur Operasional · PT Maju Logistik', text: '"Sebelum Portalog, tim kami menghabiskan 3–4 jam sehari untuk update status shipment manual. Sekarang semua terotomasi."' },
   { initials: 'RH', name: 'Rini Hartono',    company: 'CEO · RH Forwarding & Customs',           text: '"Fitur white-label luar biasa. Klien mengira portal tracking itu sistem internal kami sendiri. Image perusahaan naik drastis."' },
   { initials: 'BK', name: 'Bagas Kurniawan', company: 'IT Manager · Samudera Express Cargo',     text: '"API-nya lengkap dan dokumentasinya jelas. Integrasi ke ERP internal selesai dalam kurang dari seminggu."' },
 ]
@@ -216,11 +217,16 @@ export default function LandingPage() {
           : 'bg-slate-950/60 backdrop-blur-md border-white/[0.04]'
       }`}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-bold text-sm text-white transition-all duration-200 hover:scale-110 hover:rotate-3 cursor-pointer">
-            F
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Portalog Logo"
+            width={200}
+            height={104}
+            className="h-8 w-auto object-contain transition-all duration-200 hover:opacity-80"
+            priority
+          />
           <span className="font-bold text-[15px] tracking-tight">
-            Forwarder<span className="text-brand-400">OS</span>
+            Porta<span className="text-brand-400">Log</span>
           </span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm text-slate-400">
@@ -245,10 +251,6 @@ export default function LandingPage() {
       {/* HERO */}
       <section className="min-h-screen pt-32 pb-20 px-6 md:px-10 grid md:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
         <div>
-          <div className="fo-fade-up inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-brand-500/30 bg-brand-500/10 text-brand-400 text-xs font-mono font-medium mb-7">
-            <span className="fo-pulse w-1.5 h-1.5 rounded-full bg-brand-400 inline-block" />
-            Khusus Freight Forwarder &amp; PPJK Indonesia
-          </div>
           <h1 className="text-4xl md:text-5xl xl:text-6xl font-extrabold tracking-tight leading-[1.1] mb-6">
             <span className="block fo-fade-up fo-d100">Kelola Ekspedisi</span>
             <span className="block fo-fade-up fo-d200">
@@ -267,9 +269,6 @@ export default function LandingPage() {
               Masuk ke Akun
             </Link>
           </div>
-          <p className="fo-fade-up fo-d500 text-slate-500 text-sm">
-            Tidak perlu kartu kredit · Setup 5 menit · Batalkan kapan saja
-          </p>
         </div>
 
         {/* Dashboard Mock */}
@@ -279,7 +278,7 @@ export default function LandingPage() {
               <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
               <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
               <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
-              <span className="ml-3 text-xs text-slate-500 font-mono">ForwarderOS · Dashboard</span>
+              <span className="ml-3 text-xs text-slate-500 font-mono">Portalog · Dashboard</span>
             </div>
             <div className="p-4">
               <div className="grid grid-cols-3 gap-3 mb-4">
@@ -436,7 +435,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 {plan.price === 'Custom'
-                  ? <a href="mailto:sales@forwarderos.id" className="block text-center py-3 rounded-xl border border-white/10 text-slate-300 hover:text-white text-sm font-semibold transition-all">Hubungi Sales</a>
+                  ? <a href="mailto:sales@Portalog.id" className="block text-center py-3 rounded-xl border border-white/10 text-slate-300 hover:text-white text-sm font-semibold transition-all">Hubungi Sales</a>
                   : <Link href="/register" className={`block text-center py-3 rounded-xl text-sm font-semibold transition-all active:scale-95 ${plan.popular ? 'bg-brand-600 hover:bg-brand-500 text-white' : 'border border-white/10 text-slate-300 hover:text-white'}`}>
                       Mulai Gratis 14 Hari
                     </Link>
@@ -486,7 +485,7 @@ export default function LandingPage() {
             Siap Transformasi<br /><span className="fo-shimmer">Bisnis Ekspedisi Anda?</span>
           </h2>
           <p className="text-slate-400 text-base mb-10 leading-relaxed">
-            Bergabung dengan ratusan perusahaan freight forwarder dan PPJK yang sudah lebih efisien bersama ForwarderOS.
+            Bergabung dengan ratusan perusahaan freight forwarder dan PPJK yang sudah lebih efisien bersama Portalog.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link href="/register" className="group inline-flex items-center gap-2 px-7 py-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-[15px] transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-brand-600/30 active:scale-95">
@@ -506,8 +505,15 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-10 mb-12">
             <div className="md:col-span-2">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-bold text-sm text-white">F</div>
-                <span className="font-bold text-[15px]">Forwarder<span className="text-brand-400">OS</span></span>
+                <Image
+                  src="/logo.png"
+                  alt="Portalog Logo"
+                  width={200}
+                  height={104}
+                  className="h-8 w-auto object-contain transition-all duration-200 hover:opacity-80"
+                  priority
+                />
+                <span className="font-bold text-[15px]">Porta<span className="text-brand-400">Log</span></span>
               </div>
               <p className="text-sm text-slate-400 leading-relaxed max-w-xs">Platform manajemen ekspedisi end-to-end untuk freight forwarder dan PPJK Indonesia.</p>
             </div>
@@ -519,13 +525,18 @@ export default function LandingPage() {
             </div>
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4">Perusahaan</h4>
-              {['Tentang Kami', 'Blog', 'Karier', 'Kontak'].map(l => (
-                <a key={l} href="#" className="block text-sm text-slate-400 hover:text-white mb-2.5 transition-colors">{l}</a>
+              {[
+                { label: 'Tentang Kami', href: '/tentang-kami' },
+                { label: 'Blog',         href: '/blog'         },
+                { label: 'Karier',       href: '/karier'        },
+                { label: 'Kontak',       href: '#'              },
+              ].map(({ label, href }) => (
+                <Link key={label} href={href} className="block text-sm text-slate-400 hover:text-white mb-2.5 transition-colors">{label}</Link>
               ))}
             </div>
           </div>
           <div className="border-t border-white/[0.06] pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-slate-500">© 2025 ForwarderOS. Hak cipta dilindungi undang-undang.</p>
+            <p className="text-xs text-slate-500">© 2025 Portalog. Hak cipta dilindungi undang-undang.</p>
             <div className="flex gap-2">
               {['Next.js 15', 'PostgreSQL', 'Prisma', 'TypeScript'].map(t => (
                 <span key={t} className="text-[11px] font-mono px-2 py-1 rounded border border-white/[0.07] text-slate-500">{t}</span>

@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
   const invoicedCount  = shipments.filter(x => x.invoiceNo).length
 
   const summaryData = [
-    ['ForwarderOS — Laporan Ekspor'],
+    ['Portalog — Laporan Ekspor'],
     [`Organisasi: ${org?.name ?? '-'}`],
     [`Periode: Tahun ${year}`],
     [`Dicetak: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`],
@@ -221,7 +221,7 @@ export async function GET(req: NextRequest) {
   // ── Generate file ────────────────────────────────────────────────────────────
   const buf      = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
   const orgSlug  = org?.name?.replace(/\s+/g, '_').toLowerCase() ?? 'laporan'
-  const filename = `ForwarderOS_${orgSlug}_${year}.xlsx`
+  const filename = `Portalog_${orgSlug}_${year}.xlsx`
 
   return new NextResponse(buf, {
     status: 200,

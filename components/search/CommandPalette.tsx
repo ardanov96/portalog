@@ -424,7 +424,7 @@ export function CommandPalette() {
               <kbd className="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[9px]">Esc</kbd>
               tutup
             </div>
-            <span className="ml-auto text-[10px] text-slate-300">ForwarderOS Search</span>
+            <span className="ml-auto text-[10px] text-slate-300">Portalog Search</span>
           </div>
         </div>
       </div>

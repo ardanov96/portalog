@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { cn, getInitials } from '@/lib/utils'
 import type { CurrentUser } from '@/lib/types'
@@ -35,10 +36,17 @@ export function Sidebar({ user }: { user: CurrentUser }) {
       {/* Logo */}
       <div className="px-5 py-5 border-b border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center font-bold text-sm shrink-0">F</div>
+          <Image
+            src="/logo.png"
+            alt="Portalog Logo"
+            width={250}
+            height={154}
+            className="h-8 w-auto object-contain transition-all duration-200 hover:opacity-80"
+            priority
+          />
           <div className="min-w-0">
             <p className="text-sm font-bold truncate">{user.organization.name}</p>
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider">ForwarderOS</p>
+            <p className="text-[10px] text-slate-400 uppercase tracking-wider">Portalog</p>
           </div>
         </div>
       </div>

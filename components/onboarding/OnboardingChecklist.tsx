@@ -200,14 +200,14 @@ export function OnboardingChecklist({ onClose }: { onClose?: () => void }) {
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-base font-bold text-slate-900">
-              {isComplete ? '🎉 Setup Selesai!' : 'Setup ForwarderOS'}
+              {isComplete ? '🎉 Setup Selesai!' : 'Setup Portalog'}
             </h2>
             <MilestoneBadge pct={pct} />
           </div>
           <p className="text-sm text-slate-500 mt-0.5">
             {isComplete
               ? `Selamat, ${data.userName.split(' ')[0]}! Semua langkah setup berhasil diselesaikan.`
-              : `Selamat datang, ${data.userName.split(' ')[0]}! Selesaikan setup untuk memaksimalkan ForwarderOS.`
+              : `Selamat datang, ${data.userName.split(' ')[0]}! Selesaikan setup untuk memaksimalkan Portalog.`
             }
           </p>
         </div>
@@ -261,7 +261,7 @@ export function OnboardingChecklist({ onClose }: { onClose?: () => void }) {
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 text-center">
           <Trophy className="w-8 h-8 text-green-600 mx-auto mb-2" />
           <p className="text-sm font-bold text-green-800 mb-1">Anda sudah Expert! 🏆</p>
-          <p className="text-xs text-green-600">ForwarderOS siap membantu operasional freight forwarding Anda sehari-hari.</p>
+          <p className="text-xs text-green-600">Portalog siap membantu operasional freight forwarding Anda sehari-hari.</p>
         </div>
       )}
 

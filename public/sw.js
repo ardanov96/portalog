@@ -1,4 +1,4 @@
-// ForwarderOS Service Worker v1.0
+// Portalog Service Worker v1.0
 // Strategi caching:
 //   - App shell (HTML, CSS, JS): Cache First → fast load
 //   - API data: Network First dengan fallback → selalu fresh
@@ -163,20 +163,20 @@ self.addEventListener('push', (event) => {
 
   let payload
   try { payload = event.data.json() }
-  catch { payload = { title: 'ForwarderOS', body: event.data.text() } }
+  catch { payload = { title: 'Portalog', body: event.data.text() } }
 
   const options = {
     body:    payload.body ?? '',
     icon:    '/icons/icon-192x192.png',
     badge:   '/icons/icon-96x96.png',
-    tag:     payload.tag ?? 'forwarderos-notif',
+    tag:     payload.tag ?? 'Portalog-notif',
     data:    payload.data ?? {},
     actions: payload.actions ?? [],
     requireInteraction: payload.requireInteraction ?? false,
   }
 
   event.waitUntil(
-    self.registration.showNotification(payload.title ?? 'ForwarderOS', options)
+    self.registration.showNotification(payload.title ?? 'Portalog', options)
   )
 })
 
@@ -199,7 +199,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Offline — ForwarderOS</title>
+<title>Offline — Portalog</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -236,7 +236,7 @@ const OFFLINE_HTML = `<!DOCTYPE html>
   <div class="card">
     <div class="icon">📡</div>
     <h1>Tidak Ada Koneksi</h1>
-    <p>ForwarderOS membutuhkan koneksi internet untuk menampilkan data terbaru. Periksa koneksi Anda dan coba lagi.</p>
+    <p>Portalog membutuhkan koneksi internet untuk menampilkan data terbaru. Periksa koneksi Anda dan coba lagi.</p>
     <button onclick="location.reload()">Coba Lagi</button>
   </div>
 </body>

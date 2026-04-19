@@ -1,15 +1,19 @@
-// ─── Rate Limiting — Upstash Redis + In-memory fallback ──────────────────────
+// ─── Rate Limiting — In-memory (lru-cache) ───────────────────────────────────
 //
-// Setup Upstash Redis:
-//   1. Daftar di console.upstash.com (gratis 10K req/hari)
-//   2. Buat database Redis → copy REST URL dan token
-//   3. Isi .env:
-//      UPSTASH_REDIS_REST_URL="https://xxx.upstash.io"
-//      UPSTASH_REDIS_REST_TOKEN="xxx"
+// Menggunakan lru-cache sebagai pengganti Upstash Redis.
 //
-// Kalau env tidak di-set → otomatis pakai in-memory (untuk dev lokal)
-// In-memory TIDAK persistent antar request di serverless — hanya untuk dev
+// ⚠️  Catatan serverless (Vercel):
+//     State in-memory hidup selama satu "warm instance". Di production dengan
+//     banyak traffic, Vercel bisa spawn beberapa instance paralel sehingga
+//     counter tidak shared. Untuk MVP / traffic rendah ini cukup — attacker
+//     butuh hit instance yang sama berulang kali untuk bypass.
+//
+//     Upgrade path ke persistent: ganti `memRateLimit()` dengan Vercel KV
+//     (built-in Upstash, tanpa signup terpisah) kapanpun siap.
+//
+// Setup: npm install lru-cache
 
+import { LRUCache }      from 'lru-cache'
 import type { NextRequest } from 'next/server'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -19,7 +23,7 @@ export interface RateLimitConfig {
   limit:       number
   /** Window dalam detik */
   windowSec:   number
-  /** Prefix key untuk grouping */
+  /** Prefix key untuk grouping (opsional) */
   prefix?:     string
 }
 
@@ -27,107 +31,58 @@ export interface RateLimitResult {
   success:     boolean
   limit:       number
   remaining:   number
-  reset:       number    // Unix timestamp (detik) kapan window reset
-  retryAfter?: number    // Detik sampai bisa retry (ada jika success=false)
+  reset:       number     // Unix timestamp (detik) kapan window reset
+  retryAfter?: number     // Detik sampai bisa retry (ada jika success=false)
 }
 
 // ─── Rate limit configs per endpoint category ──────────────────────────────────
 
 export const RATE_LIMITS = {
   // Auth routes — ketat, cegah brute force
-  auth_login:    { limit: 10,  windowSec: 60  * 15 }, // 10 per 15 menit
-  auth_register: { limit: 5,   windowSec: 60  * 60 }, // 5 per jam
-  auth_misc:     { limit: 20,  windowSec: 60  * 15 }, // 20 per 15 menit
+  auth_login:    { limit: 10,  windowSec: 60 * 15 }, // 10 per 15 menit
+  auth_register: { limit: 5,   windowSec: 60 * 60 }, // 5 per jam
+  auth_misc:     { limit: 20,  windowSec: 60 * 15 }, // 20 per 15 menit
 
   // AI route — mahal, batasi lebih ketat
-  ai_suggest:    { limit: 30,  windowSec: 60  * 60 }, // 30 per jam per user
+  ai_suggest:    { limit: 30,  windowSec: 60 * 60 }, // 30 per jam per user
 
   // Invite — cegah spam
-  invite_send:   { limit: 10,  windowSec: 60  * 60 }, // 10 per jam
+  invite_send:   { limit: 10,  windowSec: 60 * 60 }, // 10 per jam
 
-  // Upload — limit by size & count
-  upload:        { limit: 50,  windowSec: 60  * 60 }, // 50 per jam
+  // Upload
+  upload:        { limit: 50,  windowSec: 60 * 60 }, // 50 per jam
 
-  // Billing / webhook — lebih longgar, butuh headroom
-  billing:       { limit: 20,  windowSec: 60       }, // 20 per menit
-  webhook:       { limit: 200, windowSec: 60       }, // 200 per menit (Midtrans bisa burst)
+  // Billing / webhook
+  billing:       { limit: 20,  windowSec: 60      }, // 20 per menit
+  webhook:       { limit: 200, windowSec: 60      }, // 200 per menit (Midtrans burst)
 
-  // Portal routes — klien bisa banyak cek
-  portal:        { limit: 120, windowSec: 60       }, // 120 per menit
+  // Portal routes
+  portal:        { limit: 120, windowSec: 60      }, // 120 per menit
 
   // General authenticated routes
-  api_authed:    { limit: 300, windowSec: 60       }, // 300 per menit
-  api_read:      { limit: 600, windowSec: 60       }, // GET lebih longgar
+  api_authed:    { limit: 300, windowSec: 60      }, // 300 per menit
+  api_read:      { limit: 600, windowSec: 60      }, // GET lebih longgar
 
   // Public / unauthenticated
-  api_public:    { limit: 60,  windowSec: 60       }, // 60 per menit per IP
+  api_public:    { limit: 60,  windowSec: 60      }, // 60 per menit per IP
 } as const
 
 export type RateLimitKey = keyof typeof RATE_LIMITS
 
-// ─── In-memory fallback (dev only) ────────────────────────────────────────────
+// ─── LRU-cache store ──────────────────────────────────────────────────────────
+//
+// Satu cache global per instance. TTL di-set ke window terpanjang (1 jam)
+// supaya entry tidak expire prematur. Counter sendiri yang track resetAt.
 
-interface MemEntry { count: number; resetAt: number }
-const memStore = new Map<string, MemEntry>()
-
-function memRateLimit(key: string, cfg: RateLimitConfig): RateLimitResult {
-  const now     = Math.floor(Date.now() / 1000)
-  const entry   = memStore.get(key)
-
-  if (!entry || now >= entry.resetAt) {
-    memStore.set(key, { count: 1, resetAt: now + cfg.windowSec })
-    return { success: true, limit: cfg.limit, remaining: cfg.limit - 1, reset: now + cfg.windowSec }
-  }
-
-  entry.count++
-  memStore.set(key, entry)
-
-  const remaining = Math.max(0, cfg.limit - entry.count)
-  const success   = entry.count <= cfg.limit
-
-  return {
-    success,
-    limit:     cfg.limit,
-    remaining,
-    reset:     entry.resetAt,
-    retryAfter: success ? undefined : entry.resetAt - now,
-  }
+interface TokenEntry {
+  count:   number
+  resetAt: number   // Unix timestamp detik
 }
 
-// ─── Upstash Redis rate limiter ───────────────────────────────────────────────
-
-let _redis: any = null
-let _rl: Map<string, any> = new Map()
-
-async function getRedis() {
-  if (_redis) return _redis
-  const url   = process.env.UPSTASH_REDIS_REST_URL
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN
-  if (!url || !token) return null
-
-  const { Redis } = await import('@upstash/redis')
-  _redis = new Redis({ url, token })
-  return _redis
-}
-
-async function getRateLimiter(key: string, cfg: RateLimitConfig) {
-  const cacheKey = `${key}:${cfg.limit}:${cfg.windowSec}`
-  if (_rl.has(cacheKey)) return _rl.get(cacheKey)
-
-  const redis = await getRedis()
-  if (!redis) return null
-
-  const { Ratelimit } = await import('@upstash/ratelimit')
-  const limiter = new Ratelimit({
-    redis,
-    limiter:   Ratelimit.slidingWindow(cfg.limit, `${cfg.windowSec} s`),
-    analytics: true,
-    prefix:    `rl:forwarderos:${cfg.prefix ?? key}`,
-  })
-
-  _rl.set(cacheKey, limiter)
-  return limiter
-}
+const cache = new LRUCache<string, TokenEntry>({
+  max: 10_000,              // max unique keys per instance
+  ttl: 1000 * 60 * 60,     // TTL 1 jam (ms) — bersih otomatis
+})
 
 // ─── Core rate limit function ──────────────────────────────────────────────────
 
@@ -138,27 +93,42 @@ export async function rateLimit(
   const cfg = RATE_LIMITS[limitKey]
 
   try {
-    const limiter = await getRateLimiter(limitKey, cfg)
+    const key = `${limitKey}:${identifier}`
+    const now = Math.floor(Date.now() / 1000)
 
-    if (!limiter) {
-      // Dev mode — in-memory
-      return memRateLimit(`${limitKey}:${identifier}`, cfg)
+    let entry = cache.get(key)
+
+    // Window baru atau belum ada entry
+    if (!entry || now >= entry.resetAt) {
+      entry = { count: 1, resetAt: now + cfg.windowSec }
+      cache.set(key, entry)
+      return {
+        success:   true,
+        limit:     cfg.limit,
+        remaining: cfg.limit - 1,
+        reset:     entry.resetAt,
+      }
     }
 
-    const result = await limiter.limit(identifier)
-    const now    = Math.floor(Date.now() / 1000)
+    // Increment dalam window yang sama
+    entry.count++
+    cache.set(key, entry)   // update supaya TTL di-refresh
+
+    const remaining = Math.max(0, cfg.limit - entry.count)
+    const success   = entry.count <= cfg.limit
 
     return {
-      success:    result.success,
-      limit:      result.limit,
-      remaining:  result.remaining,
-      reset:      Math.floor(result.reset / 1000),
-      retryAfter: result.success ? undefined : Math.max(0, Math.floor(result.reset / 1000) - now),
+      success,
+      limit:      cfg.limit,
+      remaining,
+      reset:      entry.resetAt,
+      retryAfter: success ? undefined : entry.resetAt - now,
     }
   } catch (err) {
-    // Jangan block request kalau Redis down — fail open dengan log
+    // Fail open — jangan block request kalau ada error tak terduga
     console.error('[RATE-LIMIT] Error, allowing request:', err)
-    return { success: true, limit: cfg.limit, remaining: cfg.limit, reset: 0 }
+    const cfg2 = RATE_LIMITS[limitKey]
+    return { success: true, limit: cfg2.limit, remaining: cfg2.limit, reset: 0 }
   }
 }
 
@@ -167,7 +137,6 @@ export async function rateLimit(
 export function getIdentifier(req: NextRequest, userId?: string): string {
   if (userId) return `user:${userId}`
 
-  // Try various IP headers (Vercel, Cloudflare, nginx)
   const ip =
     req.headers.get('x-real-ip') ??
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -197,8 +166,8 @@ export function tooManyRequests(result: RateLimitResult) {
   const { NextResponse } = require('next/server')
   return NextResponse.json(
     {
-      success: false,
-      error:   'Terlalu banyak permintaan. Coba lagi beberapa saat.',
+      success:    false,
+      error:      'Terlalu banyak permintaan. Coba lagi beberapa saat.',
       retryAfter: result.retryAfter,
     },
     {

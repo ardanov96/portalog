@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
         if (sendViaResend) {
           await sendViaResend({
             to:      owner.email,
-            subject: `⚠️ Trial ForwarderOS Anda berakhir besok`,
+            subject: `⚠️ Trial Portalog Anda berakhir besok`,
             html:    buildTrialEndingEmail(sub.organization.name, owner.name),
           })
         }
@@ -126,7 +126,7 @@ export async function GET(req: NextRequest) {
         if (sendViaResend) {
           await sendViaResend({
             to:      owner.email,
-            subject: `🔔 Langganan ForwarderOS diperpanjang besok`,
+            subject: `🔔 Langganan Portalog diperpanjang besok`,
             html:    buildSubRenewalEmail(sub.organization.name, owner.name, sub.plan),
           })
         }
@@ -172,7 +172,7 @@ function buildTrialEndingEmail(orgName: string, userName: string): string {
       <h2 style="color:#0f172a;font-size:18px;margin:0 0 12px;">⚠️ Trial Anda Berakhir Besok</h2>
       <p style="color:#64748b;font-size:14px;line-height:1.6;">Halo <strong>${userName}</strong>,</p>
       <p style="color:#64748b;font-size:14px;line-height:1.6;">
-        Trial ForwarderOS untuk <strong>${orgName}</strong> akan berakhir besok.
+        Trial Portalog untuk <strong>${orgName}</strong> akan berakhir besok.
         Pilih paket berlangganan untuk terus menggunakan semua fitur tanpa gangguan.
       </p>
       <div style="text-align:center;margin:28px 0;">
@@ -180,7 +180,7 @@ function buildTrialEndingEmail(orgName: string, userName: string): string {
           Pilih Paket Sekarang
         </a>
       </div>
-      <p style="color:#94a3b8;font-size:12px;text-align:center;">ForwarderOS · ${orgName}</p>
+      <p style="color:#94a3b8;font-size:12px;text-align:center;">Portalog · ${orgName}</p>
     </div>
   `
 }
@@ -192,7 +192,7 @@ function buildSubRenewalEmail(orgName: string, userName: string, plan: string): 
       <h2 style="color:#0f172a;font-size:18px;margin:0 0 12px;">🔔 Langganan Akan Diperpanjang</h2>
       <p style="color:#64748b;font-size:14px;line-height:1.6;">Halo <strong>${userName}</strong>,</p>
       <p style="color:#64748b;font-size:14px;line-height:1.6;">
-        Langganan ForwarderOS <strong>${plan}</strong> untuk <strong>${orgName}</strong>
+        Langganan Portalog <strong>${plan}</strong> untuk <strong>${orgName}</strong>
         akan diperpanjang otomatis besok. Pastikan metode pembayaran Anda aktif.
       </p>
       <div style="text-align:center;margin:28px 0;">
@@ -200,7 +200,7 @@ function buildSubRenewalEmail(orgName: string, userName: string, plan: string): 
           Kelola Langganan
         </a>
       </div>
-      <p style="color:#94a3b8;font-size:12px;text-align:center;">ForwarderOS · ${orgName}</p>
+      <p style="color:#94a3b8;font-size:12px;text-align:center;">Portalog · ${orgName}</p>
     </div>
   `
 }

@@ -390,8 +390,8 @@ export function WLPortalClient({ branding, cssVars, preview }: Props) {
           {branding.showPoweredBy && (
             <p style={{ fontSize: 11, color: '#cbd5e1', margin: 0 }}>
               Powered by{' '}
-              <a href="https://forwarderos.id" target="_blank" rel="noopener noreferrer" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 600 }}>
-                ForwarderOS
+              <a href="https://Portalog.id" target="_blank" rel="noopener noreferrer" style={{ color: '#94a3b8', textDecoration: 'none', fontWeight: 600 }}>
+                Portalog
               </a>
             </p>
           )}

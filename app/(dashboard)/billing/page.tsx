@@ -205,7 +205,7 @@ function CheckoutModal({
 
         <div className="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-200">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-sm font-semibold text-slate-800">ForwarderOS {plan.name}</span>
+            <span className="text-sm font-semibold text-slate-800">Portalog {plan.name}</span>
             <span className="text-xs text-slate-400">{billing === 'annual' ? 'Tahunan' : 'Bulanan'}</span>
           </div>
           <p className="text-xl font-bold text-slate-900">{formatRupiahBilling(price)}</p>
@@ -239,7 +239,7 @@ function CheckoutModal({
         </button>
 
         <p className="text-center text-[10px] text-slate-400 mt-3">
-          Dengan melanjutkan, Anda menyetujui syarat & ketentuan layanan ForwarderOS.
+          Dengan melanjutkan, Anda menyetujui syarat & ketentuan layanan Portalog.
         </p>
       </div>
     </div>
@@ -277,7 +277,7 @@ export default function BillingPage() {
   }, [])
 
   const handleCancel = async () => {
-    if (!confirm('Batalkan langganan? Anda masih bisa menggunakan ForwarderOS hingga akhir periode.')) return
+    if (!confirm('Batalkan langganan? Anda masih bisa menggunakan Portalog hingga akhir periode.')) return
     setCancelling(true)
     await fetch('/api/billing/portal', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'cancel' }) })
     fetchBilling()
@@ -311,7 +311,7 @@ export default function BillingPage() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <h2 className="text-base font-bold text-slate-900">
-                  ForwarderOS {sub.plan === 'TRIAL' ? 'Trial' : sub.plan}
+                  Portalog {sub.plan === 'TRIAL' ? 'Trial' : sub.plan}
                 </h2>
                 <span className={cn('text-xs font-semibold px-2.5 py-0.5 rounded-full', statusCfg.bg, statusCfg.text)}>
                   {statusCfg.label}
@@ -369,7 +369,7 @@ export default function BillingPage() {
                   Trial Anda berakhir dalam {sub.daysLeft ?? 0} hari
                 </p>
                 <p className="text-xs text-amber-600 mt-0.5">
-                  Pilih paket di bawah untuk melanjutkan menggunakan ForwarderOS tanpa gangguan.
+                  Pilih paket di bawah untuk melanjutkan menggunakan Portalog tanpa gangguan.
                 </p>
               </div>
             </div>

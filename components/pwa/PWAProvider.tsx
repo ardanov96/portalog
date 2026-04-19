@@ -136,10 +136,10 @@ export function PWAInstallPrompt() {
         <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl p-4 max-w-md mx-auto">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center shrink-0">
-              <img src="/icons/icon-96x96.png" alt="ForwarderOS" className="w-8 h-8 rounded-lg" />
+              <img src="/icons/icon-96x96.png" alt="Portalog" className="w-8 h-8 rounded-lg" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-slate-900">Install ForwarderOS</p>
+              <p className="text-sm font-bold text-slate-900">Install Portalog</p>
               <p className="text-xs text-slate-500">Akses lebih cepat dari home screen</p>
             </div>
             <button onClick={dismiss} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all shrink-0">
@@ -175,7 +175,7 @@ export function PWAInstallPrompt() {
                 <Smartphone className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-slate-900">Install ForwarderOS</p>
+                <p className="text-sm font-bold text-slate-900">Install Portalog</p>
                 <p className="text-xs text-slate-500">Tambahkan ke Home Screen</p>
               </div>
               <button onClick={dismiss} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all">

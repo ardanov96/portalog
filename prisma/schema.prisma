@@ -439,7 +439,7 @@ model WhiteLabel {
   supportWhatsapp  String?
 
   // Feature flags untuk portal klien white-label
-  showPoweredBy    Boolean  @default(true)   // "Powered by ForwarderOS"
+  showPoweredBy    Boolean  @default(true)   // "Powered by Portalog"
   showChatbot      Boolean  @default(true)
   showDocuments    Boolean  @default(true)
   showTimeline     Boolean  @default(true)

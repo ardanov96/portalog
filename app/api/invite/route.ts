@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       if (existing.organizationId === user.organizationId) {
         return NextResponse.json({ success: false, error: 'Email ini sudah terdaftar di organisasi Anda' }, { status: 409 })
       }
-      return NextResponse.json({ success: false, error: 'Email ini sudah terdaftar di ForwarderOS' }, { status: 409 })
+      return NextResponse.json({ success: false, error: 'Email ini sudah terdaftar di Portalog' }, { status: 409 })
     }
 
     // Batalkan invite lama yang belum diterima untuk email yang sama

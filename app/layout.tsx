@@ -14,13 +14,13 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title:       { default: 'ForwarderOS', template: '%s | ForwarderOS' },
+  title:       { default: 'Portalog', template: '%s | Portalog' },
   description: 'Sistem manajemen operasional Freight Forwarder & PPJK',
   manifest:    '/manifest.json',
   appleWebApp: {
     capable:        true,
     statusBarStyle: 'black-translucent',
-    title:          'ForwarderOS',
+    title:          'Portalog',
   },
   formatDetection: { telephone: false },
 }

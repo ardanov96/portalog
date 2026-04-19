@@ -1,6 +1,6 @@
 {
-  "name": "ForwarderOS",
-  "short_name": "ForwarderOS",
+  "name": "Portalog",
+  "short_name": "Portalog",
   "description": "Sistem manajemen operasional Freight Forwarder & PPJK",
   "start_url": "/dashboard",
   "display": "standalone",
@@ -84,7 +84,7 @@
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Dashboard ForwarderOS"
+      "label": "Dashboard Portalog"
     }
   ],
   "prefer_related_applications": false,

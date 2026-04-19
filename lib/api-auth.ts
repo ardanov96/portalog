@@ -160,7 +160,7 @@ export async function logApiRequest(opts: {
 
 export function apiError(status: number, code: string, message: string, details?: any): NextResponse {
   return NextResponse.json(
-    { success: false, error: { code, message, ...(details && { details }) }, docs: 'https://forwarderos.id/docs/api' },
+    { success: false, error: { code, message, ...(details && { details }) }, docs: 'https://Portalog.id/docs/api' },
     { status, headers: { 'Content-Type': 'application/json', 'X-API-Version': 'v1' } }
   )
 }

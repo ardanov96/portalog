@@ -294,7 +294,7 @@ export function InvoicePDFDocument({ data }: { data: InvoiceData }) {
             {data.orgAddress ? ` · ${data.orgAddress}` : ''}
             {data.orgCity ? `, ${data.orgCity}` : ''}
             {'\n'}
-            Dokumen ini digenerate secara otomatis oleh ForwarderOS · {data.invoiceNo}
+            Dokumen ini digenerate secara otomatis oleh Portalog · {data.invoiceNo}
           </Text>
         </View>
 

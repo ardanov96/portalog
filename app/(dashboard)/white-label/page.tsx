@@ -244,7 +244,7 @@ export default function WhiteLabelPage() {
       {/* ── Tab: Domain ── */}
       {activeTab === 'domain' && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
-          <SectionHeader icon={Globe} title="Custom Domain" desc="Arahkan domain Anda ke portal klien white-label ForwarderOS" />
+          <SectionHeader icon={Globe} title="Custom Domain" desc="Arahkan domain Anda ke portal klien white-label Portalog" />
 
           <div>
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Domain</label>
@@ -421,7 +421,7 @@ export default function WhiteLabelPage() {
       {activeTab === 'features' && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-1">
           <SectionHeader icon={Settings2} title="Fitur Portal" desc="Kontrol fitur apa saja yang tersedia untuk klien Anda" />
-          <Toggle label="Tampilkan 'Powered by ForwarderOS'" desc="Hilangkan watermark untuk white-label penuh" checked={config.showPoweredBy ?? true} onChange={upd('showPoweredBy')} />
+          <Toggle label="Tampilkan 'Powered by Portalog'" desc="Hilangkan watermark untuk white-label penuh" checked={config.showPoweredBy ?? true} onChange={upd('showPoweredBy')} />
           <Toggle label="Chatbot AI" desc="AI assistant untuk pertanyaan klien tentang shipment" checked={config.showChatbot ?? true} onChange={upd('showChatbot')} />
           <Toggle label="Akses Dokumen" desc="Klien bisa download dokumen yang sudah disetujui" checked={config.showDocuments ?? true} onChange={upd('showDocuments')} />
           <Toggle label="Timeline Status" desc="Tampilkan riwayat perubahan status shipment" checked={config.showTimeline ?? true} onChange={upd('showTimeline')} />
@@ -434,7 +434,7 @@ export default function WhiteLabelPage() {
         <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
         <div className="text-xs text-blue-700 leading-relaxed">
           <p className="font-semibold mb-1">Cara kerja white-label:</p>
-          <p>Setelah domain diverifikasi dan konfigurasi disimpan, klien Anda dapat login di <strong>{config.customDomain ?? 'domain.anda.co.id'}</strong> menggunakan email portal yang sudah diatur di halaman Klien. Mereka akan melihat portal dengan branding perusahaan Anda — tanpa branding ForwarderOS (jika "Powered by" dimatikan).</p>
+          <p>Setelah domain diverifikasi dan konfigurasi disimpan, klien Anda dapat login di <strong>{config.customDomain ?? 'domain.anda.co.id'}</strong> menggunakan email portal yang sudah diatur di halaman Klien. Mereka akan melihat portal dengan branding perusahaan Anda — tanpa branding Portalog (jika "Powered by" dimatikan).</p>
         </div>
       </div>
     </div>

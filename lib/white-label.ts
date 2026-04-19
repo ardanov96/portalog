@@ -29,10 +29,10 @@ export interface BrandingConfig {
   isWhiteLabel:    boolean
 }
 
-// ─── Default ForwarderOS branding ─────────────────────────────────────────────
+// ─── Default Portalog branding ─────────────────────────────────────────────
 
 export const DEFAULT_BRANDING: Omit<BrandingConfig, 'orgId' | 'orgSlug' | 'customDomain'> = {
-  brandName:       'ForwarderOS',
+  brandName:       'Portalog',
   logoUrl:         null,
   faviconUrl:      null,
   primaryColor:    '1A3C34',
@@ -82,7 +82,7 @@ export async function resolveBrandingByDomain(hostname: string): Promise<Brandin
   // Strip port if present
   const domain = hostname.split(':')[0].toLowerCase()
 
-  // Skip default ForwarderOS domains
+  // Skip default Portalog domains
   const appHost = (process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/https?:\/\//, '').split(':')[0]
   if (domain === appHost || domain === 'localhost' || domain.endsWith('.vercel.app')) return null
 

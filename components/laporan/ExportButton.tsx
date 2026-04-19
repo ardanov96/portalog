@@ -71,7 +71,7 @@ export function ExportButton({ year }: ExportButtonProps) {
       // Ambil filename dari header
       const cd       = res.headers.get('Content-Disposition') ?? ''
       const match    = cd.match(/filename="([^"]+)"/)
-      const filename = match?.[1] ?? `ForwarderOS_${year}.xlsx`
+      const filename = match?.[1] ?? `Portalog_${year}.xlsx`
 
       const blob = await res.blob()
       const url  = URL.createObjectURL(blob)

@@ -22,7 +22,7 @@ export default async function WhiteLabelPortalPage({
     branding = await resolveBrandingByDomain(domain)
   }
 
-  // Jika tidak ada white-label config → fallback ke ForwarderOS default
+  // Jika tidak ada white-label config → fallback ke Portalog default
   const config: BrandingConfig = branding ?? {
     ...DEFAULT_BRANDING,
     orgId:    '',

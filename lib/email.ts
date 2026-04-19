@@ -1,4 +1,14 @@
-// ─── Resend Email Helper ──────────────────────────────────────────────────────
+// ─── Nodemailer + Gmail SMTP Email Helper ────────────────────────────────────
+// Ganti dari: Resend API
+// Ganti ke:   Nodemailer + Gmail App Password (SMTP)
+//
+// Setup Gmail:
+//   1. Aktifkan 2-Step Verification di akun Gmail
+//   2. Buka: myaccount.google.com/apppasswords
+//   3. Buat App Password → pilih "Mail" → copy 16-karakter password
+//   4. Isi .env: EMAIL_USER, EMAIL_PASS, EMAIL_FROM
+
+import nodemailer from 'nodemailer'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,7 +58,59 @@ export interface StaffInviteEmailPayload {
   role:         string
 }
 
-// ─── Status config ─────────────────────────────────────────────────────────────
+// ─── Nodemailer Transporter (singleton) ──────────────────────────────────────
+
+let _transporter: nodemailer.Transporter | null = null
+
+function getTransporter(): nodemailer.Transporter | null {
+  const user = process.env.EMAIL_USER
+  const pass = process.env.EMAIL_PASS
+
+  if (!user || !pass) {
+    console.warn('[EMAIL] EMAIL_USER / EMAIL_PASS tidak di-set — notifikasi email dilewati')
+    return null
+  }
+
+  // Reuse transporter yang sudah ada (penting untuk serverless warm instance)
+  if (_transporter) return _transporter
+
+  _transporter = nodemailer.createTransport({
+    service: 'gmail',           // otomatis pakai smtp.gmail.com:465 + SSL
+    auth: { user, pass },
+    pool: true,                 // connection pooling — efisien untuk batch send
+    maxConnections: 3,
+  })
+
+  return _transporter
+}
+
+// ─── Core sender ──────────────────────────────────────────────────────────────
+
+async function sendMail(options: {
+  to:      string
+  subject: string
+  html:    string
+}): Promise<EmailResult> {
+  const transporter = getTransporter()
+  if (!transporter) return { success: false, error: 'Konfigurasi email tidak ada' }
+
+  const from = process.env.EMAIL_FROM ?? process.env.EMAIL_USER
+
+  try {
+    const info = await transporter.sendMail({
+      from,
+      to:      options.to,
+      subject: options.subject,
+      html:    options.html,
+    })
+    return { success: true, id: info.messageId }
+  } catch (err: any) {
+    console.error('[EMAIL] Nodemailer error:', err)
+    return { success: false, error: err.message ?? 'Gagal mengirim email' }
+  }
+}
+
+// ─── Status config ────────────────────────────────────────────────────────────
 
 const STATUS_LABEL: Record<string, string> = {
   DRAFT:              'Draft',
@@ -132,7 +194,7 @@ function baseLayout(content: string, orgName: string, orgEmail?: string): string
               <p style="margin:0;color:#94a3b8;font-size:11px;text-align:center;line-height:1.6;">
                 Email ini dikirim secara otomatis oleh <strong>${orgName}</strong>.<br/>
                 ${orgEmail ? `Balas email ini ke <a href="mailto:${orgEmail}" style="color:#3b82f6;">${orgEmail}</a> jika ada pertanyaan.<br/>` : ''}
-                &copy; ${new Date().getFullYear()} ${orgName} · Powered by ForwarderOS
+                &copy; ${new Date().getFullYear()} ${orgName} · Powered by Portalog
               </p>
             </td>
           </tr>
@@ -272,7 +334,7 @@ export function buildStaffInviteEmail(p: StaffInviteEmailPayload): { subject: st
   const content = `
     <h2 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#0f172a;">✉️ Undangan Bergabung ke ${p.orgName}</h2>
     <p style="margin:0 0 24px;color:#64748b;font-size:14px;">
-      ${p.inviteeName ? `Halo <strong>${p.inviteeName}</strong>,` : 'Halo,'} Anda diundang untuk bergabung ke tim <strong>${p.orgName}</strong> di ForwarderOS.
+      ${p.inviteeName ? `Halo <strong>${p.inviteeName}</strong>,` : 'Halo,'} Anda diundang untuk bergabung ke tim <strong>${p.orgName}</strong> di Portalog.
     </p>
 
     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin-bottom:20px;">
@@ -306,51 +368,8 @@ export function buildStaffInviteEmail(p: StaffInviteEmailPayload): { subject: st
   `
 
   return {
-    subject: `Undangan bergabung ke ${p.orgName} di ForwarderOS`,
+    subject: `Undangan bergabung ke ${p.orgName} di Portalog`,
     html:    baseLayout(content, p.orgName),
-  }
-}
-
-// ─── Resend sender ────────────────────────────────────────────────────────────
-
-async function sendViaResend(options: {
-  to:      string
-  from?:   string
-  subject: string
-  html:    string
-}): Promise<EmailResult> {
-  const apiKey = process.env.RESEND_API_KEY
-  if (!apiKey) {
-    console.warn('[EMAIL] RESEND_API_KEY tidak di-set — notifikasi email dilewati')
-    return { success: false, error: 'API key tidak ada' }
-  }
-
-  const from = options.from ?? process.env.EMAIL_FROM ?? 'onboarding@resend.dev'
-
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method:  'POST',
-      headers: {
-        Authorization:  `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from,
-        to:      [options.to],
-        subject: options.subject,
-        html:    options.html,
-      }),
-    })
-
-    const data = await res.json()
-    if (!res.ok) {
-      console.error('[EMAIL] Resend error:', data)
-      return { success: false, error: data.message ?? 'Resend error' }
-    }
-    return { success: true, id: data.id }
-  } catch (err: any) {
-    console.error('[EMAIL] Fetch error:', err)
-    return { success: false, error: err.message ?? 'Koneksi gagal' }
   }
 }
 
@@ -358,22 +377,22 @@ async function sendViaResend(options: {
 
 export async function emailNotifyStatusChange(p: StatusChangeEmailPayload): Promise<EmailResult> {
   const { subject, html } = buildStatusChangeEmail(p)
-  return sendViaResend({ to: p.clientEmail, subject, html })
+  return sendMail({ to: p.clientEmail, subject, html })
 }
 
 export async function emailNotifyDocumentReady(p: DocumentReadyEmailPayload): Promise<EmailResult> {
   const { subject, html } = buildDocumentReadyEmail(p)
-  return sendViaResend({ to: p.clientEmail, subject, html })
+  return sendMail({ to: p.clientEmail, subject, html })
 }
 
 export async function emailNotifyDeadlineReminder(p: DeadlineReminderEmailPayload): Promise<EmailResult> {
   const { subject, html } = buildDeadlineReminderEmail(p)
-  return sendViaResend({ to: p.clientEmail, subject, html })
+  return sendMail({ to: p.clientEmail, subject, html })
 }
 
 export async function emailSendStaffInvite(p: StaffInviteEmailPayload & { to: string }): Promise<EmailResult> {
   const { subject, html } = buildStaffInviteEmail(p)
-  return sendViaResend({ to: p.to, subject, html })
+  return sendMail({ to: p.to, subject, html })
 }
 
 // ─── Deadline Reminder Batch ──────────────────────────────────────────────────

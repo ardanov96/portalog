@@ -22,7 +22,7 @@ const TITLES: Record<string, string> = {
   '/cron':              'Cron Jobs',
 }
 
-const DISMISS_KEY = 'forwarderos_onboarding_dismissed'
+const DISMISS_KEY = 'Portalog_onboarding_dismissed'
 
 // ─── Onboarding pill ──────────────────────────────────────────────────────────
 
@@ -130,7 +130,7 @@ function SearchTrigger() {
 export function TopBar({ user }: { user: CurrentUser }) {
   const pathname = usePathname()
   const base     = '/' + pathname.split('/')[1]
-  const title    = TITLES[base] ?? 'ForwarderOS'
+  const title    = TITLES[base] ?? 'Portalog'
 
   return (
     <>

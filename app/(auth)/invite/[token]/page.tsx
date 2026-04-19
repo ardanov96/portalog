@@ -83,7 +83,7 @@ export default function AcceptInvitePage() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-600 text-white mb-4">
             <Ship className="w-7 h-7" />
           </div>
-          <p className="text-sm text-slate-500 font-medium">ForwarderOS</p>
+          <p className="text-sm text-slate-500 font-medium">Portalog</p>
         </div>
 
         {/* Invalid/expired state */}

@@ -43,7 +43,7 @@ export async function GET() {
     where: { organizationId: user.organizationId },
   })
 
-  const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://forwarderos.id'
+  const appUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://Portalog.id'
   const previewUrl = `${appUrl}/wl-portal?preview=${user.organization.slug}`
 
   return NextResponse.json({

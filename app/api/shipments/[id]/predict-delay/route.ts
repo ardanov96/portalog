@@ -162,7 +162,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
 
   // ── 5. Build konteks untuk Claude ─────────────────────────────────────────────
 
-  const prompt = `Kamu adalah sistem AI analisis risiko untuk platform manajemen logistik ForwarderOS Indonesia. Tugasmu menganalisis risiko keterlambatan shipment berdasarkan data historis dan kondisi shipment saat ini.
+  const prompt = `Kamu adalah sistem AI analisis risiko untuk platform manajemen logistik Portalog Indonesia. Tugasmu menganalisis risiko keterlambatan shipment berdasarkan data historis dan kondisi shipment saat ini.
 
 ## SHIPMENT YANG DIANALISIS
 

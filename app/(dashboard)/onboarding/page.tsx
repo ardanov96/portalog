@@ -13,7 +13,7 @@ export default function OnboardingPage() {
           <ChevronLeft className="w-4 h-4" /> Dashboard
         </Link>
         <h1 className="text-2xl font-bold text-slate-900">Setup &amp; Onboarding</h1>
-        <p className="text-slate-500 text-sm mt-1">Ikuti langkah-langkah berikut untuk mulai menggunakan ForwarderOS</p>
+        <p className="text-slate-500 text-sm mt-1">Ikuti langkah-langkah berikut untuk mulai menggunakan Portalog</p>
       </div>
       <div className="bg-white rounded-2xl border border-slate-200 p-6">
         <OnboardingChecklist />

@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
             amount:         amount,
             status:         'settlement',
             paymentType:    payment_type,
-            description:    `Pembayaran ForwarderOS ${planId}`,
+            description:    `Pembayaran Portalog ${planId}`,
             paidAt:         new Date(transaction_time),
           },
         }),

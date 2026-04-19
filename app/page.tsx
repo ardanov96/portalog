@@ -1,9 +1,12 @@
-// app/page.tsx — Server Component, JANGAN tambah 'use client'
 import LandingPage from '@/components/landing/LandingPage'
 
 export const metadata = {
-  title: 'ForwarderOS — Platform Manajemen Ekspedisi & PPJK',
+  title: 'Portalog — Platform Manajemen Ekspedisi & PPJK',
   description: 'Platform manajemen end-to-end untuk perusahaan freight forwarder dan PPJK Indonesia.',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export default function Page() {

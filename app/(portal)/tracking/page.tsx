@@ -267,7 +267,7 @@ export default function PortalTrackingPage() {
         )}
 
         <p className="text-center text-xs text-slate-300 pb-4">
-          &copy; {new Date().getFullYear()} {data?.client?.organization?.name} · Powered by ForwarderOS
+          &copy; {new Date().getFullYear()} {data?.client?.organization?.name} · Powered by Portalog
         </p>
       </main>
 

@@ -4,7 +4,7 @@ import { cache } from 'react'
 import { prisma } from './prisma'
 import type { CurrentUser } from './types'
 
-const COOKIE_NAME = 'ff_session'
+export const COOKIE_NAME = 'ff_session'  // ✅ export agar bisa dipakai di route lain
 
 function secret() {
   const s = process.env.AUTH_SECRET
@@ -29,14 +29,15 @@ export async function verifySessionToken(token: string) {
   }
 }
 
+// ✅ Hanya dipakai dari Server Actions, bukan Route Handler
 export async function setSessionCookie(token: string) {
   const jar = await cookies()
   jar.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure:   process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7,
-    path: '/',
+    maxAge:   60 * 60 * 24 * 7,
+    path:     '/',
   })
 }
 
@@ -45,7 +46,7 @@ export async function clearSessionCookie() {
   jar.delete(COOKIE_NAME)
 }
 
-export const getCurrentUser = cache(async () => {
+export async function getCurrentUser() {
   const jar = await cookies()
   const token = jar.get(COOKIE_NAME)?.value
   if (!token) return null
@@ -58,10 +59,11 @@ export const getCurrentUser = cache(async () => {
     select: {
       id: true, name: true, email: true, role: true,
       phone: true, avatarUrl: true, organizationId: true,
-      organization: { select: { id: true, name: true, slug: true, logoUrl: true } },
+      organization: {
+        select: { id: true, name: true, slug: true, logoUrl: true },
+      },
     },
   })
-})
-
+}
 
 export type { CurrentUser }

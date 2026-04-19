@@ -5,6 +5,9 @@ import { TopBar } from '@/components/layout/TopBar'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
+
+  console.log('[LAYOUT] user:', user ? user.email : 'NULL')
+
   if (!user) redirect('/login')
 
   return (

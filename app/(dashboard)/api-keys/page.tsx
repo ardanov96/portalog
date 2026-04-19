@@ -336,7 +336,7 @@ function KeyRow({ apiKey, onUpdated, onDeleted }: { apiKey: ApiKey; onUpdated: (
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL ?? 'https://forwarderos.id'
+const BASE = process.env.NEXT_PUBLIC_APP_URL ?? 'https://Portalog.id'
 
 const ENDPOINTS = [
   { method: 'GET',    path: '/api/v1/shipments',    scope: 'shipments:read',  desc: 'List semua shipment (mendukung filter & paginasi)' },
@@ -382,7 +382,7 @@ export default function ApiKeysPage() {
           <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <Key className="w-6 h-6 text-brand-500" /> API Keys
           </h1>
-          <p className="text-slate-500 text-sm mt-0.5">Integrasi ForwarderOS dengan ERP, WMS, atau sistem internal Anda</p>
+          <p className="text-slate-500 text-sm mt-0.5">Integrasi Portalog dengan ERP, WMS, atau sistem internal Anda</p>
         </div>
         <button onClick={() => setShowCreate(true)}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 transition-all">
@@ -412,7 +412,7 @@ export default function ApiKeysPage() {
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
               <Key className="w-10 h-10 text-slate-200 mx-auto mb-3" />
               <p className="text-sm font-semibold text-slate-500 mb-1">Belum ada API key</p>
-              <p className="text-xs text-slate-400 mb-4">Buat API key untuk mengintegrasikan ForwarderOS dengan sistem ERP atau WMS Anda</p>
+              <p className="text-xs text-slate-400 mb-4">Buat API key untuk mengintegrasikan Portalog dengan sistem ERP atau WMS Anda</p>
               <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700">
                 <Plus className="w-4 h-4" /> Buat API Key Pertama
               </button>
@@ -533,7 +533,7 @@ curl -H "Authorization: Bearer YOUR_API_KEY" \\
 {
   "success": false,
   "error": { "code": "VALIDATION_ERROR", "message": "...", "details": [...] },
-  "docs": "https://forwarderos.id/docs/api"
+  "docs": "https://Portalog.id/docs/api"
 }
 
 // Status codes:

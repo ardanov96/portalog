@@ -21,10 +21,10 @@ function getRateLimitKey(pathname: string, method: string): RateLimitKey {
   return 'api_authed'
 }
 
-// ─── App hostname (default ForwarderOS domain) ────────────────────────────────
+// ─── App hostname (default Portalog domain) ────────────────────────────────
 const APP_HOSTNAMES = new Set([
-  'forwarderos.id',
-  'www.forwarderos.id',
+  'Portalog.id',
+  'www.Portalog.id',
   'localhost',
 ])
 
@@ -61,9 +61,13 @@ export async function middleware(req: NextRequest) {
 
   // ── Standard page routing (default domain) ─────────────────────────────────
   if (!pathname.startsWith('/api')) {
-    const isPublic = PUBLIC_PAGES.some(p => pathname.startsWith(p))
+    const isPublic = PUBLIC_PAGES.some(p =>
+      p === '/' ? pathname === '/' : pathname.startsWith(p)
+    )
     const token    = req.cookies.get('ff_session')?.value
     const isAuth   = token ? !!(await verifySessionToken(token)) : false
+
+    console.log('[MW]', method, pathname, '| token:', token ? 'ADA' : 'KOSONG', '| isAuth:', isAuth, '| isPublic:', isPublic)
 
     if (isPublic && isAuth && !pathname.startsWith('/portal') && !pathname.startsWith('/wl-portal')) {
       return NextResponse.redirect(new URL('/dashboard', req.url))

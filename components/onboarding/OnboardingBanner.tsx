@@ -18,7 +18,7 @@ interface OnboardingData {
   steps: Step[]; orgName: string; userName: string
 }
 
-const DISMISS_KEY = 'forwarderos_onboarding_dismissed'
+const DISMISS_KEY = 'Portalog_onboarding_dismissed'
 
 export function OnboardingBanner() {
   const [data, setData]         = useState<OnboardingData | null>(null)
@@ -60,7 +60,7 @@ export function OnboardingBanner() {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white">
-            Setup ForwarderOS — {doneCount}/{data.steps.length} langkah selesai
+            Setup Portalog — {doneCount}/{data.steps.length} langkah selesai
           </p>
           {/* Progress bar */}
           <div className="flex items-center gap-2 mt-1.5">
@@ -160,7 +160,7 @@ function CompletedBanner({ name, onDismiss }: { name: string; onDismiss: () => v
       </div>
       <div className="flex-1">
         <p className="text-sm font-bold text-white">🎉 Setup selesai, {name.split(' ')[0]}!</p>
-        <p className="text-xs text-white/70 mt-0.5">ForwarderOS sudah siap dipakai sepenuhnya. Selamat bekerja!</p>
+        <p className="text-xs text-white/70 mt-0.5">Portalog sudah siap dipakai sepenuhnya. Selamat bekerja!</p>
       </div>
       <button onClick={onDismiss} className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-all shrink-0">
         <X className="w-4 h-4" />

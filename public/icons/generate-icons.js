@@ -6,7 +6,7 @@
 const fs   = require('fs')
 const path = require('path')
 
-// SVG source — logo ForwarderOS (ship icon)
+// SVG source — logo Portalog (ship icon)
 const SVG_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!-- Background circle -->
   <rect width="512" height="512" rx="96" fill="#3b82f6"/>

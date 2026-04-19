@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       amount,
       customerName:  user.name,
       customerEmail: org?.email ?? user.email,
-      description:   `ForwarderOS ${plan.name} — ${billing === 'annual' ? 'Tahunan' : 'Bulanan'}`,
+      description:   `Portalog ${plan.name} — ${billing === 'annual' ? 'Tahunan' : 'Bulanan'}`,
     })
 
     // Simpan pending order di subscription
