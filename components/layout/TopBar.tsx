@@ -100,11 +100,8 @@ function OnboardingPill() {
 // ─── Search trigger button ────────────────────────────────────────────────────
 
 function SearchTrigger() {
-  const [, forceOpen] = useState(false)
-
   const trigger = () => {
-    // Dispatch keyboard event to activate CommandPalette's global listener
-    window.dispatchEvent(new KeyboardEvent('keydown', {
+    document.dispatchEvent(new KeyboardEvent('keydown', {
       key: 'k', metaKey: true, ctrlKey: false, bubbles: true,
     }))
   }

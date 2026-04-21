@@ -1,4 +1,4 @@
-# ForwarderOS
+# Portalog
 
 Platform manajemen operasional untuk Freight Forwarder & PPJK Indonesia — dibangun di atas Next.js 15, PostgreSQL, dan Prisma. Mencakup manajemen shipment end-to-end, portal klien white-label, AI delay prediction, referral program, dan public REST API untuk integrasi ERP.
 
@@ -200,7 +200,7 @@ MARINE_TRAFFIC_API_KEY=""
 NEXT_PUBLIC_SENTRY_DSN=""
 SENTRY_AUTH_TOKEN=""
 SENTRY_ORG=""
-SENTRY_PROJECT="forwarderos"
+SENTRY_PROJECT="portalog"
 ```
 
 ---
@@ -326,7 +326,7 @@ Authorization: Bearer fos_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 {
   "success": false,
   "error": { "code": "RATE_LIMIT_EXCEEDED", "message": "..." },
-  "docs": "https://forwarderos.id/docs/api"
+  "docs": "https://portalog.id/docs/api"
 }
 ```
 
@@ -394,7 +394,7 @@ Setiap FF yang mengaktifkan white-label perlu domain mereka ditambahkan di Verce
 Semua FF berjalan di satu deployment Vercel. Tidak perlu deployment terpisah per FF.
 
 1. FF input custom domain di Settings → White-label (misal `portal.majulogistik.co.id`).
-2. Middleware mendeteksi hostname bukan domain ForwarderOS utama → rewrite ke `/wl-portal` dengan header `X-WL-Domain`.
+2. Middleware mendeteksi hostname bukan domain Portalog utama → rewrite ke `/wl-portal` dengan header `X-WL-Domain`.
 3. Server component query database untuk branding config org tersebut.
 4. Portal dirender dengan CSS variables dari config: warna, font, logo, teks.
 5. In-memory cache 5 menit mencegah query database per request.
@@ -409,8 +409,8 @@ TXT    @       →  fos-verify-xxxxxxxxxxxxxxxx
 
 ## Cara Kerja Referral
 
-1. Setiap org mendapat kode unik `FOS-XXXX-XXXX` (auto-generate dari slug nama org).
-2. Share via link: `https://forwarderos.id/register?ref=FOS-XXXX-XXXX` — kode terisi otomatis di form register.
+1. Setiap org mendapat kode unik `FOSXXX-X` (auto-generate dari slug nama org).
+2. Share via link: `https://portalog.id/register?ref=FOS-XXXX-XXXX` — kode terisi otomatis di form register.
 3. Org baru yang daftar dengan kode mendapat 14 hari bonus trial (total 28 hari).
 4. Saat org tersebut pertama kali bayar subscription, Midtrans webhook memanggil `qualifyReferral()` otomatis.
 5. Referrer mendapat kredit 1 bulan di dashboard Referral.

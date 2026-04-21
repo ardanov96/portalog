@@ -1,66 +1,75 @@
+// app/api/billing/checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { PLANS, createMidtransSnapToken, type PlanId } from '@/lib/billing'
-import { z } from 'zod'
-
-const schema = z.object({
-  planId:   z.enum(['STARTER', 'GROWTH', 'ENTERPRISE']),
-  billing:  z.enum(['monthly', 'annual']).default('monthly'),
-})
+import {
+  createSnapTransaction,
+  generateOrderId,
+  getPlanName,
+  getPlanPrice,
+  type PlanKey,
+  PLANS,
+} from '@/lib/midtrans'
 
 export async function POST(req: NextRequest) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-  if (user.role !== 'OWNER') return NextResponse.json({ success: false, error: 'Hanya Owner yang bisa manage billing' }, { status: 403 })
 
   try {
-    const { planId, billing } = schema.parse(await req.json())
-    const plan   = PLANS[planId as PlanId]
-    const amount = billing === 'annual' ? plan.priceAnnual : plan.price
+    const { plan } = await req.json() as { plan: PlanKey }
 
-    const orderId = `FOS-${user.organizationId.slice(-8).toUpperCase()}-${Date.now()}`
+    if (!PLANS[plan]) {
+      return NextResponse.json({ success: false, error: 'Plan tidak valid' }, { status: 400 })
+    }
 
-    // Ambil email dari org kalau ada
+    // Ambil data org + subscription
     const org = await prisma.organization.findUnique({
-      where:  { id: user.organizationId },
-      select: { email: true, name: true },
+      where:   { id: user.organizationId },
+      include: { subscription: true },
     })
+    if (!org) return NextResponse.json({ success: false, error: 'Org tidak ditemukan' }, { status: 404 })
 
-    const snapData = await createMidtransSnapToken({
+    const amount  = getPlanPrice(plan)
+    const orderId = generateOrderId(org.id, plan)
+
+    // Buat Snap transaction di Midtrans
+    const snap = await createSnapTransaction({
       orderId,
       amount,
       customerName:  user.name,
-      customerEmail: org?.email ?? user.email,
-      description:   `Portalog ${plan.name} — ${billing === 'annual' ? 'Tahunan' : 'Bulanan'}`,
+      customerEmail: user.email,
+      itemName:      `Portalog ${getPlanName(plan)} - 1 Bulan`,
+      itemId:        `plan_${plan.toLowerCase()}`,
     })
 
-    // Simpan pending order di subscription
-    await prisma.subscription.upsert({
-      where:  { organizationId: user.organizationId },
-      create: {
-        organizationId: user.organizationId,
-        plan:           planId,
-        status:         'PAST_DUE',
-        lastOrderId:    orderId,
-      },
-      update: {
-        lastOrderId: orderId,
-      },
-    })
+    // Simpan order pending ke BillingHistory
+    const sub = org.subscription
+    if (sub) {
+      await prisma.billingHistory.create({
+        data: {
+          subscriptionId: sub.id,
+          orderId,
+          amount,
+          status:      'pending',
+          description: `Portalog ${getPlanName(plan)} - 1 Bulan`,
+        },
+      })
+
+      // Update lastOrderId di subscription
+      await prisma.subscription.update({
+        where: { id: sub.id },
+        data:  { lastOrderId: orderId },
+      })
+    }
 
     return NextResponse.json({
-      success: true,
-      data: {
-        snapToken:   snapData.token,
-        redirectUrl: snapData.redirect_url,
-        orderId,
-        amount,
-        planId,
-      },
+      success:     true,
+      snapToken:   snap.token,
+      redirectUrl: snap.redirect_url,
+      orderId,
     })
-  } catch (e: any) {
-    console.error('[BILLING CHECKOUT]', e)
-    return NextResponse.json({ success: false, error: e.message || 'Gagal membuat sesi pembayaran' }, { status: 500 })
+  } catch (err: any) {
+    console.error('[POST /api/billing/checkout]', err)
+    return NextResponse.json({ success: false, error: err.message ?? 'Gagal membuat transaksi' }, { status: 500 })
   }
 }

@@ -10,6 +10,7 @@ const schema = z.object({
   email:            z.string().email(),
   password:         z.string().min(8, 'Password minimal 8 karakter'),
   organizationName: z.string().min(3),
+  referralCode:     z.string().optional(),   // ← tambahkan ini
 })
 
 export async function POST(req: NextRequest) {
@@ -35,6 +36,57 @@ export async function POST(req: NextRequest) {
       return { org, user }
     })
 
+    // ─── Klaim referral code jika ada ──────────────────────────────────────
+    if (body.referralCode) {
+      const code = body.referralCode.toUpperCase()
+
+      const referrerOrg = await prisma.organization.findFirst({
+        where: { referralCode: code },
+      })
+
+      if (referrerOrg && referrerOrg.id !== org.id) {
+        const existingReferral = await prisma.referral.findFirst({
+          where: {
+            referrerOrgId: referrerOrg.id,
+            referredEmail: body.email,
+            status:        'PENDING',
+          },
+        })
+
+        if (existingReferral) {
+          await prisma.referral.update({
+            where: { id: existingReferral.id },
+            data: {
+              referredOrgId:   org.id,
+              referredOrgName: org.name,
+              status:          'QUALIFIED',
+              qualifiedAt:     new Date(),
+            },
+          })
+        } else {
+          await prisma.referral.create({
+            data: {
+              referrerOrgId:   referrerOrg.id,
+              referredOrgId:   org.id,
+              referredOrgName: org.name,
+              code,
+              status:          'QUALIFIED',
+              rewardMonths:    1,
+              qualifiedAt:     new Date(),
+              expiresAt:       new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+            },
+          })
+        }
+
+        // Tambah kredit ke referrer
+        await prisma.organization.update({
+          where: { id: referrerOrg.id },
+          data:  { referralCredits: { increment: 1 } },
+        })
+      }
+    }
+    // ───────────────────────────────────────────────────────────────────────
+
     const token = await createSessionToken(user.id)
     await setSessionCookie(token)
 
@@ -42,6 +94,7 @@ export async function POST(req: NextRequest) {
       success: true,
       data: { id: user.id, name: user.name, email: user.email, role: user.role, organization: { id: org.id, name: org.name, slug: org.slug } },
     }, { status: 201 })
+
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json({ success: false, error: e.errors[0].message }, { status: 400 })
     console.error('[REGISTER]', e)

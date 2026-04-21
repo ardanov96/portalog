@@ -436,4 +436,49 @@ export async function checkAndSendDeadlineReminders(shipments: {
   await Promise.allSettled(pending)
 }
 
+// ─── Referral Invite Email ────────────────────────────────────────────────────
+
+export interface ReferralInviteEmailPayload {
+  to:           string
+  referralCode: string
+  orgName:      string
+  inviterName:  string
+}
+
+export function buildReferralInviteEmail(p: ReferralInviteEmailPayload): { subject: string; html: string } {
+  const registerUrl = `${process.env.NEXT_PUBLIC_APP_URL}/register?ref=${p.referralCode}`
+
+  const content = `
+    <h2 style="margin:0 0 4px;font-size:22px;font-weight:700;color:#0f172a;">🎁 Undangan ke Portalog</h2>
+    <p style="margin:0 0 24px;color:#64748b;font-size:14px;">
+      <strong>${p.inviterName}</strong> dari <strong>${p.orgName}</strong> mengundang Anda mencoba Portalog — 
+      platform manajemen shipment & dokumen untuk freight forwarder Indonesia.
+    </p>
+
+    <div style="background:#f1f5f9;border:2px dashed #c7d2fe;border-radius:12px;padding:24px;margin-bottom:24px;text-align:center;">
+      <p style="margin:0 0 6px;font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Kode Referral</p>
+      <p style="margin:0;font-size:30px;font-weight:800;color:#4f46e5;letter-spacing:0.2em;font-family:monospace;">${p.referralCode}</p>
+    </div>
+
+    <div style="text-align:center;margin-bottom:20px;">
+      <a href="${registerUrl}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-weight:700;font-size:14px;text-decoration:none;padding:14px 32px;border-radius:10px;">
+        Daftar Sekarang →
+      </a>
+    </div>
+
+    <p style="margin:0;font-size:11px;color:#94a3b8;text-align:center;word-break:break-all;">
+      Atau buka: <a href="${registerUrl}" style="color:#6366f1;">${registerUrl}</a>
+    </p>
+  `
+  return {
+    subject: `${p.inviterName} mengundang Anda ke Portalog`,
+    html:    baseLayout(content, p.orgName),
+  }
+}
+
+export async function sendReferralInviteEmail(p: ReferralInviteEmailPayload): Promise<EmailResult> {
+  const { subject, html } = buildReferralInviteEmail(p)
+  return sendMail({ to: p.to, subject, html })
+}
+
 export const sendBulkDeadlineEmailReminders = checkAndSendDeadlineReminders

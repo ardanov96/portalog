@@ -40,6 +40,7 @@
     "jose": "^5.9.6",
     "lru-cache": "^11.3.5",
     "lucide-react": "^0.454.0",
+    "nanoid": "^5.1.9",
     "next": "^16.2.4",
     "nodemailer": "^8.0.5",
     "react": "^18.3.1",
