@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { PWAProvider, PWAInstallPrompt } from '@/components/pwa/PWAProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,7 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="id">
       <body className={`${inter.className} antialiased`}>
-        {children}
+        <PWAProvider>
+          {children}
+          <PWAInstallPrompt />
+        </PWAProvider>
       </body>
     </html>
   )

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PLANS, type PlanKey } from '@/lib/midtrans'
+import Script from 'next/script'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -203,16 +204,15 @@ export default function BillingPage() {
 
   return (
     <>
-      {/* Midtrans Snap.js */}
-      <script
+      <Script
         src={
           process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true'
             ? 'https://app.midtrans.com/snap/snap.js'
             : 'https://app.sandbox.midtrans.com/snap/snap.js'
         }
         data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY ?? ''}
+        strategy="lazyOnload"
       />
-
       <div className="max-w-5xl space-y-8">
 
         {/* Header */}

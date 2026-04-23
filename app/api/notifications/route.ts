@@ -125,16 +125,27 @@ export async function POST(req: NextRequest) {
 }
 
 // GET /api/notifications — list notifikasi untuk user ini
-export async function GET(req: NextRequest) {
+export async function GET() {  // ← hapus parameter req yang tidak dipakai
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
 
-  const notifs = await prisma.notification.findMany({
-    where: { shipment: { organizationId: user.organizationId } },
-    orderBy: { createdAt: 'desc' },
-    take: 30,
-    include: { shipment: { select: { referenceNo: true } } },
-  })
+  try {
+    const notifications = await prisma.notification.findMany({
+      where:   { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      take:    30,
+      include: {
+        shipment: { select: { referenceNo: true, status: true } },
+      },
+    })
 
-  return NextResponse.json({ success: true, data: notifs })
+    const unreadCount = await prisma.notification.count({
+      where: { userId: user.id, isRead: false },
+    })
+
+    return NextResponse.json({ success: true, data: notifications, unreadCount })
+  } catch (err) {
+    console.error('[GET /api/notifications]', err)
+    return NextResponse.json({ success: false, error: 'Kesalahan server' }, { status: 500 })
+  }
 }
